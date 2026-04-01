@@ -15,7 +15,7 @@ const app = exp();
 
 // CORS
 app.use(cors({
-  origin: ["https://blog-app-ahtk.vercel.app"],
+  origin: ["https://blog-app-5ozu.vercel.app"],
   credentials: true
 }));
 
