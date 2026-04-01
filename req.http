@@ -1,0 +1,162 @@
+############################################
+### USER REGISTER
+############################################
+POST http://localhost:4000/user-api/users
+Content-Type: application/json
+
+{
+  "firstName": "Anurag",
+  "lastName": "Sharma",
+  "email": "anurag.user@example.com",
+  "password": "User@12345",
+  "profileImageUrl": "https://example.com/avatars/user.png"
+}
+
+############################################
+### USER LOGIN
+############################################
+POST http://localhost:4000/common-api/login
+Content-Type: application/json
+
+{
+  "email": "anurag.user@example.com",
+  "password": "User@12345"
+}
+
+############################################
+### GET ALL ARTICLES (USER)
+############################################
+GET http://localhost:4000/user-api/articles
+
+
+############################################
+### ADD COMMENT (USER)
+############################################
+PUT http://localhost:4000/user-api/articles
+Content-Type: application/json
+
+{
+  "user": "69c38262620f9ca09fa10dbf",
+  "articleId": "69ae860ca9b19c83fbe0dd20",
+  "comment": "Good article!"
+}
+
+
+############################################
+### AUTHOR REGISTER
+############################################
+POST http://localhost:4000/author-api/users
+Content-Type: application/json
+
+{
+  "firstName": "Vikas",
+  "lastName": "Author",
+  "email": "vikas.author@example.com",
+  "password": "Author@12345",
+  "profileImageUrl": "https://example.com/avatars/author.png"
+}
+
+
+############################################
+### AUTHOR LOGIN
+############################################
+POST http://localhost:4000/common-api/login
+Content-Type: application/json
+
+{
+  "email": "vikas.author@example.com",
+  "password": "Author@12345"
+}
+
+
+############################################
+### CREATE ARTICLE (AUTHOR)
+############################################
+POST http://localhost:4000/author-api/articles
+Content-Type: application/json
+
+{
+  "author": "69c38fdf57401094a60f0ae7",
+  "title": "Test Article",
+  "category": "Programming",
+  "content": "Content of test article"
+}
+############################################
+POST http://localhost:4000/author-api/articles
+Content-Type: application/json
+
+{
+  "author": "69c38fdf57401094a60f0ae7",
+  "title": "Test Article 2",
+  "category": "javascript",
+  "content": "Content of test article 2"
+}
+
+############################################
+### READ ARTICLES OF AUTHOR
+############################################
+GET http://localhost:4000/author-api/articles/69c38fdf57401094a60f0ae7
+
+
+
+############################################
+### UPDATE ARTICLE
+############################################
+PUT http://localhost:4000/author-api/articles
+Content-Type: application/json
+
+{
+  "author": "69ae8585a9b19c83fbe0dd1c",
+  "articleId": "69ae860ca9b19c83fbe0dd20",
+  "title": "Updated Article",
+  "category": "Programming",
+  "content": "Updated content"
+}
+
+
+############################################
+### DELETE ARTICLE (SOFT DELETE)
+############################################
+PATCH http://localhost:4000/author-api/articles/6989750220ce5bf826ec4f7e/status
+Content-Type: application/json
+
+{ "isArticleActive": true }
+
+
+############################################
+### ADMIN BLOCK USER
+############################################
+POST http://localhost:4000/admin-api/BlockedUsers
+Content-Type: application/json
+
+{
+  "userId": "698c9740ffc4615dfce82760"
+}
+
+
+### ADMIN UNBLOCK USER
+############################################
+PUT http://localhost:4000/admin-api/unblock/698c9740ffc4615dfce82760
+
+
+############################################
+### CHANGE PASSWORD
+############################################
+PUT http://localhost:4000/common-api/change-password
+Content-Type: application/json
+
+{
+  "currentPassword": "User@12345",
+  "newPassword": "NewPassword@12345"
+}
+
+
+############################################
+### LOGOUT
+############################################
+GET http://localhost:4000/common-api/logout
+###
+GET http://localhost:4000/common-api/check-auth
+###
+POST http://localhost:4000/author-api/articles/:id/comments
+###
