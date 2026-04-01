@@ -35,7 +35,7 @@ function WriteArticle() {
     articleObj.author=currentUser._id;
     try {
       await axios.post(
-        "http://localhost:4000/author-api/articles",
+        "https://blog-app-5ozu.vercel.app/api/author-api/articles",
         articleObj,
         { withCredentials: true }
       );

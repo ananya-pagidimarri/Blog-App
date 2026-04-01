@@ -14,7 +14,7 @@ export const useAuth = create((set) => ({
       //set loading true
       set({ loading: true, error: null });
       //make api call
-      let res = await axios.post("http://localhost:4000/common-api/login", userCredObj, { withCredentials: true });
+      let res = await axios.post("https://blog-app-5ozu.vercel.app/api/common-api/login", userCredObj, { withCredentials: true });
       // console.log("res is ", res);
       //update state
       const userData = res.data.payload;
@@ -41,7 +41,7 @@ export const useAuth = create((set) => ({
       //set loading state
       set({ loading: true, error: null });
       //make logout api req
-      await axios.get("http://localhost:4000/common-api/logout", { withCredentials: true });
+      await axios.get("https://blog-app-5ozu.vercel.app/api/common-api/logout", { withCredentials: true });
       //update state
       localStorage.removeItem("currentUser");
       set({

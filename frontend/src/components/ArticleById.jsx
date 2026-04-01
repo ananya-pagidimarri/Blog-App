@@ -41,7 +41,7 @@ function ArticleByID() {
       setLoading(true);
       try {
         const res = await axios.get(
-          `http://localhost:4000/user-api/article/${id}`,
+          `https://blog-app-5ozu.vercel.app/api/articles/${id}`,
           { withCredentials: true }
         );
         setArticle(res.data.payload);
@@ -75,7 +75,7 @@ function ArticleByID() {
 
     try {
       const res = await axios.patch(
-        `http://localhost:4000/author-api/articles/${id}/status`,
+        `https://blog-app-5ozu.vercel.app/api/articles/${id}/status`,
         { isArticleActive: newStatus },
         { withCredentials: true }
       );
@@ -104,7 +104,7 @@ function ArticleByID() {
 
     try {
       const res = await axios.put(
-        "http://localhost:4000/user-api/articles",
+        "https://blog-app-5ozu.vercel.app/api/articles",
         commentObj,
         { withCredentials: true }
       );
