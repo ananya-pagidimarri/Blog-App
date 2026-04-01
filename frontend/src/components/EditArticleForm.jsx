@@ -42,7 +42,7 @@ function EditArticle() {
     setLoading(true);
     try {
       await axios.put(
-        `https://blog-app-5ozu.vercel.app/api/articles/${id}`,
+        `https://blog-app-5ozu.vercel.app/articles/${id}`,
         data,
         { withCredentials: true }
       );

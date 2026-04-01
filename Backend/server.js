@@ -15,7 +15,7 @@ const app = exp();
 
 // CORS
 app.use(cors({
-  origin: ["http://localhost:5173"],
+  origin: ["https://blog-app-ahtk.vercel.app"],
   credentials: true
 }));
 
