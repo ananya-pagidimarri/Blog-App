@@ -1,6 +1,6 @@
 import axios from "axios";
 
 export const axiosData = axios.create({
-  baseURL: "https://blog-app-5ozu.vercel.app/api",
+  baseURL: "https://blog-backend1-yekw.onrender.com",
   withCredentials: true,
 });

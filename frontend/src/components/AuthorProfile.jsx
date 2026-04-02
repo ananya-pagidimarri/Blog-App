@@ -1,6 +1,5 @@
 import { NavLink, Outlet } from "react-router";
 import { pageWrapper, navLinkClass, navLinkActiveClass, divider } from "../styles/common";
-import BASE_URL from "../utils/baseURL";
 
 function AuthorProfile() {
   return (
