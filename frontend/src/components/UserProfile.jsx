@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { toast } from "react-hot-toast";
 import axios from "axios";
 import { useEffect, useState } from "react";
+import BASE_URL from "../utils/baseURL";
 
 import {
   articleGrid,
@@ -28,7 +29,7 @@ function UserProfile() {
     const getArticles = async () => {
       setLoading(true);
       try {
-        const res = await axios.get("https://blog-app-ahtk.vercel.app/user-api/articles", { withCredentials: true });
+        const res = await axios.get(`${BASE_URL}/user-api/articles`, { withCredentials: true });
 
         setArticles(res.data.payload);
       } catch (err) {

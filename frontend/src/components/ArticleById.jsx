@@ -20,6 +20,7 @@ import {
   inputClass,
 } from "../styles/common.js";
 import { useForm } from "react-hook-form";
+import BASE_URL from "../utils/baseURL";
 
 function ArticleByID() {
   const { id } = useParams();
@@ -41,7 +42,7 @@ function ArticleByID() {
       setLoading(true);
       try {
         const res = await axios.get(
-          `https://blog-app-ahtk.vercel.app/articles/${id}`,
+          `${BASE_URL}/articles/${id}`,
           { withCredentials: true }
         );
         setArticle(res.data.payload);
@@ -75,7 +76,7 @@ function ArticleByID() {
 
     try {
       const res = await axios.patch(
-        `https://blog-app-ahtk.vercel.app/articles/${id}/status`,
+        `${BASE_URL}/articles/${id}/status`,
         { isArticleActive: newStatus },
         { withCredentials: true }
       );
@@ -104,7 +105,7 @@ function ArticleByID() {
 
     try {
       const res = await axios.put(
-        "https://blog-app-ahtk.vercel.app/articles",
+        `${BASE_URL}/articles`,
         commentObj,
         { withCredentials: true }
       );

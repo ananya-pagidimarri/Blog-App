@@ -16,6 +16,7 @@ import { NavLink } from "react-router";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router";
+import BASE_URL from "../utils/baseURL";
 
 function Register() {
   const { register, handleSubmit } = useForm();
@@ -23,52 +24,63 @@ function Register() {
   const [error, setError] = useState(null);
   const [preview, setPreview] = useState(null);
   const navigate = useNavigate();
-  //const []=useState()
 
+  // ✅ REGISTER FUNCTION
   const onUserRegister = async (newUser) => {
     setLoading(true);
+    setError(null);
 
-    // Create form data object
-    const formData = new FormData();
-    //get user object
-    let { role, profileImageUrl, ...userObj } = newUser;
-    console.log("role", role);
-    console.log("profileImageUrl", profileImageUrl);
-    //add all fields except profilePic to FormData object
-    Object.keys(userObj).forEach((key) => {
-      formData.append(key, userObj[key]);
-    });
-    // add profilePic to Formdata object
-    formData.append("profileImageUrl", profileImageUrl[0]);
-    //add image to formData objecte
     try {
-      if (role === "user") {
-        //make API req to user-api
-        let resObj = await axios.post("https://blog-app-ahtk.vercel.app/user-api/users", formData);
-        if (resObj.status === 201) {
-          //navigate to login
-          navigate("/login");
-        }
+      const formData = new FormData();
+
+      let { role, profileImageUrl, ...userObj } = newUser;
+
+      // ✅ Role validation
+      if (!role) {
+        setError("Please select a role");
+        setLoading(false);
+        return;
       }
-      if (role === "author") {
-        //make API req to author-api
-        //make API req to user-api
-        let resObj = await axios.post("https://blog-app-ahtk.vercel.app/author-api/users", formData);
-        console.log("res obj is ", resObj);
-        if (resObj.status === 201) {
-          //navigate to login
-          navigate("/login");
-        }
+
+      // ✅ Append text fields
+      Object.keys(userObj).forEach((key) => {
+        formData.append(key, userObj[key]);
+      });
+
+      // ✅ Append image safely
+      if (profileImageUrl && profileImageUrl.length > 0) {
+        formData.append("profileImageUrl", profileImageUrl[0]);
+      }
+
+      // ✅ Select API based on role
+      let url = "";
+
+      if (role === "USER") {
+        url = `${BASE_URL}/user-api/users`;
+      } else if (role === "AUTHOR") {
+        url = `${BASE_URL}/author-api/users`;
+      }
+
+      // ✅ API call
+      const res = await axios.post(url, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        withCredentials: true,
+      });
+
+      if (res.status === 201) {
+        navigate("/login");
       }
     } catch (err) {
-      // console.log("err is ", err);
+      console.log(err);
       setError(err.response?.data?.error || "Registration failed");
     } finally {
       setLoading(false);
     }
   };
 
-  //cleanup(remove preview image from browser memory)
+  // ✅ cleanup preview
   useEffect(() => {
     return () => {
       if (preview) {
@@ -77,20 +89,21 @@ function Register() {
     };
   }, [preview]);
 
-  //loading
-  if (loading === true) {
-    return <p className={loadingClass}></p>;
+  if (loading) {
+    return <p className={loadingClass}>Registering...</p>;
   }
 
   return (
     <div className={`${pageBackground} flex items-center justify-center py-16 px-4`}>
       <div className={formCard}>
-        {/* Title */}
         <h2 className={formTitle}>Create an Account</h2>
-        {/* error message */}
+
+        {/* ERROR */}
         {error && <p className={errorClass}>{error}</p>}
+
         <form onSubmit={handleSubmit(onUserRegister)}>
-          {/* Role Selection */}
+          
+          {/* ROLE */}
           <div className="mb-5">
             <p className={labelClass}>Register as</p>
             <div className="flex gap-6 mt-1">
@@ -98,75 +111,73 @@ function Register() {
                 <input
                   type="radio"
                   {...register("role")}
-                  id="user"
-                  value="user"
+                  value="USER"   // ✅ FIXED
                   className="accent-violet-600 w-4 h-4"
                 />
-                <span className="text-sm text-stone-700 font-medium">User</span>
+                <span>User</span>
               </label>
+
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
                   {...register("role")}
-                  id="author"
-                  value="author"
+                  value="AUTHOR"   // ✅ FIXED
                   className="accent-violet-600 w-4 h-4"
                 />
-                <span className="text-sm text-stone-700 font-medium">Author</span>
+                <span>Author</span>
               </label>
             </div>
           </div>
 
           <div className={divider} />
 
-          {/* First & Last Name — side by side */}
+          {/* NAME */}
           <div className="sm:flex gap-4 mb-4">
             <div className="flex-1">
               <label className={labelClass}>First Name</label>
-              <input type="text" {...register("firstName")} placeholder="First name" className={inputClass} />
+              <input {...register("firstName")} className={inputClass} />
             </div>
+
             <div className="flex-1">
               <label className={labelClass}>Last Name</label>
-              <input type="text" {...register("lastName")} placeholder="Last name" className={inputClass} />
+              <input {...register("lastName")} className={inputClass} />
             </div>
           </div>
 
-          {/* Email */}
+          {/* EMAIL */}
           <div className={formGroup}>
             <label className={labelClass}>Email</label>
-            <input type="email" {...register("email")} placeholder="you@example.com" className={inputClass} />
+            <input type="email" {...register("email")} className={inputClass} />
           </div>
 
-          {/* Password */}
+          {/* PASSWORD */}
           <div className={formGroup}>
             <label className={labelClass}>Password</label>
-            <input type="password" {...register("password")} placeholder="Min. 8 characters" className={inputClass} />
+            <input type="password" {...register("password")} className={inputClass} />
           </div>
 
-          {/* Profile Image URL */}
+          {/* IMAGE */}
           <div className={formGroup}>
-            <label className={labelClass}>Profile Image URL</label>
+            <label className={labelClass}>Profile Image</label>
             <input
               type="file"
               accept="image/png, image/jpeg"
               {...register("profileImageUrl")}
               onChange={(e) => {
-                //get image file
                 const file = e.target.files[0];
-                // validation for image format
+
                 if (file) {
                   if (!["image/jpeg", "image/png"].includes(file.type)) {
-                    setError("Only JPG or PNG allowed");
+                    setError("Only JPG/PNG allowed");
                     return;
                   }
-                  //validation for file size
+
                   if (file.size > 2 * 1024 * 1024) {
-                    setError("File size must be less than 2MB");
+                    setError("Max size 2MB");
                     return;
                   }
-                  //Converts file → temporary browser URL(create preview URL)
-                  const previewUrl = URL.createObjectURL(file);
-                  setPreview(previewUrl);
+
+                  setPreview(URL.createObjectURL(file));
                   setError(null);
                 }
               }}
@@ -174,21 +185,21 @@ function Register() {
 
             {preview && (
               <div className="mt-3 flex justify-center">
-                <img src={preview} alt="Preview" className="w-24 h-24 object-cover rounded-full border" />
+                <img src={preview} className="w-24 h-24 rounded-full" />
               </div>
             )}
           </div>
 
-          {/* Submit */}
+          {/* SUBMIT */}
           <button type="submit" className={submitBtn}>
             Create Account
           </button>
         </form>
 
-        {/* Footer note */}
+        {/* FOOTER */}
         <p className={`${mutedText} text-center mt-5`}>
           Already have an account?{" "}
-          <NavLink to="/login" className="text-violet-600 hover:text-violet-500 font-medium">
+          <NavLink to="/login" className="text-violet-600">
             Sign in
           </NavLink>
         </p>
@@ -198,8 +209,3 @@ function Register() {
 }
 
 export default Register;
-
-//res.data
-//err.response.
-
-//append(fn,userObj.profileImageUrl)

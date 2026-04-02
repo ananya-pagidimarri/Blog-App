@@ -15,6 +15,7 @@ import {
   loadingClass,
 } from "../styles/common";
 import { useAuth } from "../store/authStore";
+import BASE_URL from "../utils/baseURL";
 
 function WriteArticle() {
   const navigate = useNavigate();
@@ -35,7 +36,7 @@ function WriteArticle() {
     articleObj.author=currentUser._id;
     try {
       await axios.post(
-        "https://blog-app-ahtk.vercel.app/author-api/articles",
+        `${BASE_URL}/author-api/articles`,
         articleObj,
         { withCredentials: true }
       );

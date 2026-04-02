@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useParams } from "react-router";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
+import BASE_URL from "../utils/baseURL";
 
 import {
   formCard,
@@ -42,7 +43,7 @@ function EditArticle() {
     setLoading(true);
     try {
       await axios.put(
-        `https://blog-app-ahtk.vercel.app/articles/${id}`,
+        `${BASE_URL}/articles/${id}`,
         data,
         { withCredentials: true }
       );

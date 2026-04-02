@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import axios from "axios";
+import BASE_URL from "../utils/baseURL";
 
 const savedUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("currentUser") || "null") : null;
 
@@ -14,7 +15,11 @@ export const useAuth = create((set) => ({
       //set loading true
       set({ loading: true, error: null });
       //make api call
-      let res = await axios.post("https://blog-app-5ozu.vercel.app/common-api/login", userCredObj, { withCredentials: true });
+      let res = await axios.post(
+  `${BASE_URL}/common-api/login`,
+  userCredObj,
+  { withCredentials: true }
+);
       // console.log("res is ", res);
       //update state
       const userData = res.data.payload;
@@ -41,7 +46,9 @@ export const useAuth = create((set) => ({
       //set loading state
       set({ loading: true, error: null });
       //make logout api req
-      await axios.get("https://blog-app-5ozu.vercel.app/common-api/logout", { withCredentials: true });
+      await axios.get(`${BASE_URL}/common-api/logout`, {
+  withCredentials: true
+});
       //update state
       localStorage.removeItem("currentUser");
       set({

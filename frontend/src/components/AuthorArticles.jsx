@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router";
 import { useAuth } from "../store/authStore";
+import BASE_URL from "../utils/baseURL";
 
 import {
   articleCardClass,
@@ -30,7 +31,7 @@ function AuthorArticles() {
       setLoading(true);
 
       try {
-        const res = await axios.get(`https://blog-app-ahtk.vercel.app/articles/author/${user._id}`, { withCredentials: true });
+        const res = await axios.get(`${BASE_URL}/articles/author/${user._id}`, { withCredentials: true });
 
         setArticles(res.data.payload);
       } catch (err) {

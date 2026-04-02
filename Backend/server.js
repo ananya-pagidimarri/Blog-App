@@ -15,8 +15,19 @@ const app = exp();
 
 // CORS
 app.use(cors({
-  origin: ["http://localhost:5173",
-    "https://blog-app-ahtk.vercel.app"],
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      "http://localhost:5173",
+      "https://blog-app-ahtk.vercel.app"
+    ];
+
+    // allow requests with no origin (like Postman)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true
 }));
 
@@ -35,12 +46,13 @@ app.use("/common-api", commonRoute);
 // connect to DB
 const connectDB = async () => {
   try {
-
     await connect(process.env.DB_URL);
     console.log("DB connection success");
 
-    app.listen(process.env.PORT, () => {
-      console.log(`Server started on port ${process.env.PORT}`);
+    const PORT = process.env.PORT || 5000;
+
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
     });
 
   } catch (err) {
@@ -55,8 +67,8 @@ app.post("/logout", (req, res) => {
 
   res.clearCookie("token", {
     httpOnly: true,
-    secure: false,
-    sameSite: "lax"
+    secure: true,
+    sameSite: "none"
   });
 
   res.status(200).json({ message: "Logged out successfully" });
