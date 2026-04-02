@@ -10,39 +10,39 @@ import cors from "cors";
 
 config();
 
-// Create express application
+// create app
 const app = exp();
 
 
-//  CORS (FIXED FOR PRODUCTION)
+// ✅ CORS (VERY IMPORTANT - FINAL FIX)
 app.use(cors({
-  origin: "https://blog-app-ahtk.vercel.app", // your frontend URL
+  origin: [
+    "http://localhost:5173",
+    "https://blog-app-ahtk.vercel.app"
+  ],
   credentials: true
 }));
 
 
-//  body parser
+// ✅ middlewares
 app.use(exp.json());
-
-
-//   cookie parser
 app.use(cookieParser());
 
 
-//  APIs
+// ✅ routes
 app.use("/user-api", userRoute);
 app.use("/author-api", authorRoute);
 app.use("/admin-api", adminRoute);
 app.use("/common-api", commonRoute);
 
 
-// DB CONNECTION + SERVER START
+// ✅ DB + SERVER START
 const startServer = async () => {
   try {
 
-    // 🔥 CHECK ENV VARIABLE
+    // check env
     if (!process.env.DB_URL) {
-      console.log("❌ DB_URL is missing in Render Environment Variables");
+      console.log("❌ DB_URL missing in Render");
       process.exit(1);
     }
 
@@ -56,38 +56,37 @@ const startServer = async () => {
     });
 
   } catch (err) {
-    console.log("❌ Error in DB connection:", err.message);
-    process.exit(1); // stop app if DB fails
+    console.log("❌ DB connection error:", err.message);
+    process.exit(1);
   }
 };
 
 startServer();
 
 
-//  LOGOUT ROUTE (FIXED FOR PRODUCTION)
+// ✅ logout route
 app.post("/logout", (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
-    secure: true,      
-    sameSite: "none"   
+    secure: true,      // required for HTTPS
+    sameSite: "none"   // required for cross-origin
   });
 
   res.status(200).json({ message: "Logged out successfully" });
 });
 
 
-//  INVALID PATH HANDLER
+// ✅ 404 handler
 app.use((req, res) => {
   res.status(404).json({ message: `Invalid path: ${req.url}` });
 });
 
 
-// GLOBAL ERROR HANDLER
+// ✅ global error handler
 app.use((err, req, res, next) => {
 
   console.log("Error:", err);
 
-  // mongoose validation error
   if (err.name === "ValidationError") {
     return res.status(400).json({
       message: "error occurred",
@@ -95,7 +94,6 @@ app.use((err, req, res, next) => {
     });
   }
 
-  // mongoose cast error
   if (err.name === "CastError") {
     return res.status(400).json({
       message: "error occurred",
@@ -103,10 +101,7 @@ app.use((err, req, res, next) => {
     });
   }
 
-  const errCode = err.code ?? err.cause?.code;
-
-  // duplicate key error
-  if (errCode === 11000) {
+  if (err.code === 11000) {
     const field = Object.keys(err.keyValue)[0];
     const value = err.keyValue[field];
 
@@ -116,7 +111,6 @@ app.use((err, req, res, next) => {
     });
   }
 
-  // custom errors
   if (err.status) {
     return res.status(err.status).json({
       message: "error occurred",
@@ -124,7 +118,6 @@ app.use((err, req, res, next) => {
     });
   }
 
-  // default error
   res.status(500).json({
     message: "error occurred",
     error: "Server side error"
