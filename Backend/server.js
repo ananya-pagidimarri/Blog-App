@@ -16,10 +16,7 @@ const app = exp();
 
 //  CORS (FIXED FOR PRODUCTION)
 app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "https://blog-app-ahtk.vercel.app"
-  ],
+  origin: "https://blog-app-ahtk.vercel.app", // your frontend URL
   credentials: true
 }));
 
