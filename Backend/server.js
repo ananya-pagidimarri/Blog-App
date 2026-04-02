@@ -16,13 +16,9 @@ const app = exp();
 
 // ✅ CORS (VERY IMPORTANT - FINAL FIX)
 app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "https://blog-app-ahtk.vercel.app"
-  ],
-  credentials: true
+  origin: "https://blog-app-ahtk.vercel.app" , // frontend URL
+  credentials: true, // allow cookies
 }));
-
 
 // ✅ middlewares
 app.use(exp.json());
