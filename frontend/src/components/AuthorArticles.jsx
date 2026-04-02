@@ -30,7 +30,7 @@ function AuthorArticles() {
       setLoading(true);
 
       try {
-        const res = await axios.get(`https://blog-app-5ozu.vercel.app/articles/author/${user._id}`, { withCredentials: true });
+        const res = await axios.get(`https://blog-app-ahtk.vercel.app/articles/author/${user._id}`, { withCredentials: true });
 
         setArticles(res.data.payload);
       } catch (err) {

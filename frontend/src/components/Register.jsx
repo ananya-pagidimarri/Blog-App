@@ -44,7 +44,7 @@ function Register() {
     try {
       if (role === "user") {
         //make API req to user-api
-        let resObj = await axios.post("https://blog-app-5ozu.vercel.app/user-api/users", formData);
+        let resObj = await axios.post("https://blog-app-ahtk.vercel.app/user-api/users", formData);
         if (resObj.status === 201) {
           //navigate to login
           navigate("/login");
@@ -53,7 +53,7 @@ function Register() {
       if (role === "author") {
         //make API req to author-api
         //make API req to user-api
-        let resObj = await axios.post("https://blog-app-5ozu.vercel.app/api/author-api/users", formData);
+        let resObj = await axios.post("https://blog-app-ahtk.vercel.app/author-api/users", formData);
         console.log("res obj is ", resObj);
         if (resObj.status === 201) {
           //navigate to login

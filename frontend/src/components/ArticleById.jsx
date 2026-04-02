@@ -41,7 +41,7 @@ function ArticleByID() {
       setLoading(true);
       try {
         const res = await axios.get(
-          `https://blog-app-5ozu.vercel.app/articles/${id}`,
+          `https://blog-app-ahtk.vercel.app/articles/${id}`,
           { withCredentials: true }
         );
         setArticle(res.data.payload);
@@ -75,7 +75,7 @@ function ArticleByID() {
 
     try {
       const res = await axios.patch(
-        `https://blog-app-5ozu.vercel.app/articles/${id}/status`,
+        `https://blog-app-ahtk.vercel.app/articles/${id}/status`,
         { isArticleActive: newStatus },
         { withCredentials: true }
       );
@@ -104,7 +104,7 @@ function ArticleByID() {
 
     try {
       const res = await axios.put(
-        "https://blog-app-5ozu.vercel.app/articles",
+        "https://blog-app-ahtk.vercel.app/articles",
         commentObj,
         { withCredentials: true }
       );

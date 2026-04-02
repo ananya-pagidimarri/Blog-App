@@ -28,7 +28,7 @@ function UserProfile() {
     const getArticles = async () => {
       setLoading(true);
       try {
-        const res = await axios.get("https://blog-app-5ozu.vercel.app/user-api/articles", { withCredentials: true });
+        const res = await axios.get("https://blog-app-ahtk.vercel.app/user-api/articles", { withCredentials: true });
 
         setArticles(res.data.payload);
       } catch (err) {
