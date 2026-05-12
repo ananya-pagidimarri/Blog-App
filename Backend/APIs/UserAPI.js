@@ -9,7 +9,7 @@ import cloudinary from "../config/cloudinary.js";
 export const userRoute = exp.Router();
 
 
-// ✅ Register User
+// ================= REGISTER USER =================
 userRoute.post(
   "/users",
   upload.single("profileImageUrl"),
@@ -19,10 +19,10 @@ userRoute.post(
 
     try {
 
-      // get user data
-      let userObj = req.body;
+      // user data
+      const userObj = req.body;
 
-      // upload image to cloudinary
+      // upload image if exists
       if (req.file) {
         cloudinaryResult = await uploadToCloudinary(req.file.buffer);
       }
@@ -31,7 +31,7 @@ userRoute.post(
       const newUserObj = await register({
         ...userObj,
         role: "USER",
-        profileImageUrl: cloudinaryResult?.secure_url,
+        profileImageUrl: cloudinaryResult?.secure_url || "",
       });
 
       res.status(201).json({
@@ -43,7 +43,9 @@ userRoute.post(
 
       // rollback uploaded image if DB fails
       if (cloudinaryResult?.public_id) {
-        await cloudinary.uploader.destroy(cloudinaryResult.public_id);
+        await cloudinary.uploader.destroy(
+          cloudinaryResult.public_id
+        );
       }
 
       next(err);
@@ -52,7 +54,7 @@ userRoute.post(
 );
 
 
-// ✅ Read All Articles
+// ================= GET ALL ARTICLES =================
 userRoute.get(
   "/articles",
   verifyToken("USER", "AUTHOR", "ADMIN"),
@@ -60,31 +62,38 @@ userRoute.get(
 
     try {
 
-      // get all active articles
       const articles = await ArticleModel.find({
         isArticleActive: true,
       })
-        .populate("author", "firstName lastName email profileImageUrl")
-        .populate("comments.user", "email firstName");
+        .populate(
+          "author",
+          "firstName lastName email profileImageUrl"
+        )
+        .populate(
+          "comments.user",
+          "email firstName"
+        )
+        .sort({ createdAt: -1 });
 
       res.status(200).json({
-        message: "List of all articles",
+        message: "Articles fetched successfully",
         payload: articles,
       });
 
     } catch (err) {
 
-      console.error("Get articles error:", err);
+      console.log("Get articles error:", err);
 
       res.status(500).json({
         message: "Internal server error",
+        error: err.message,
       });
     }
   }
 );
 
 
-// ✅ Add Comment To Article
+// ================= ADD COMMENT =================
 userRoute.put(
   "/articles",
   verifyToken("USER", "AUTHOR", "ADMIN"),
@@ -95,42 +104,45 @@ userRoute.put(
       const { articleId, comment } = req.body;
 
       // validation
-      if (!articleId || !comment || !comment.trim()) {
+      if (!articleId || !comment?.trim()) {
         return res.status(400).json({
-          message: "Article ID and comment text are required",
+          message: "Article ID and comment are required",
         });
       }
 
-      // update article with comment
-      let articleWithComment = await ArticleModel.findOneAndUpdate(
-        {
-          _id: articleId,
-          isArticleActive: true,
-        },
-        {
-          $push: {
-            comments: {
-              user: req.user.userId,
-              comment: comment.trim(),
+      // update article
+      const articleWithComment =
+        await ArticleModel.findOneAndUpdate(
+          {
+            _id: articleId,
+            isArticleActive: true,
+          },
+          {
+            $push: {
+              comments: {
+                user: req.user.userId,
+                comment: comment.trim(),
+              },
             },
           },
-        },
-        {
-          new: true,
-          runValidators: true,
-        }
-      )
-        .populate("author", "firstName email")
-        .populate("comments.user", "email firstName");
+          {
+            new: true,
+            runValidators: true,
+          }
+        )
+          .populate("author", "firstName email")
+          .populate(
+            "comments.user",
+            "email firstName"
+          );
 
       // article not found
       if (!articleWithComment) {
         return res.status(404).json({
-          message: "Article not found or inactive",
+          message: "Article not found",
         });
       }
 
-      // success response
       res.status(200).json({
         message: "Comment added successfully",
         payload: articleWithComment,
@@ -138,17 +150,18 @@ userRoute.put(
 
     } catch (err) {
 
-      console.error("Comment add error:", err);
+      console.log("Comment error:", err);
 
       res.status(500).json({
         message: "Internal server error",
+        error: err.message,
       });
     }
   }
 );
 
 
-// ✅ Get Comments Of Article
+// ================= GET COMMENTS =================
 userRoute.get(
   "/articles/:id/comments",
   verifyToken("USER", "AUTHOR", "ADMIN"),
@@ -156,32 +169,33 @@ userRoute.get(
 
     try {
 
-      const article = await ArticleModel.findById(req.params.id)
+      const article = await ArticleModel.findById(
+        req.params.id
+      )
         .populate(
           "comments.user",
           "email firstName lastName profileImageUrl"
         )
         .select("comments");
 
-      // article not found
       if (!article) {
         return res.status(404).json({
           message: "Article not found",
         });
       }
 
-      // success response
       res.status(200).json({
-        message: "Comments retrieved",
+        message: "Comments fetched successfully",
         payload: article.comments,
       });
 
     } catch (err) {
 
-      console.error("Get comments error:", err);
+      console.log("Get comments error:", err);
 
       res.status(500).json({
         message: "Internal server error",
+        error: err.message,
       });
     }
   }

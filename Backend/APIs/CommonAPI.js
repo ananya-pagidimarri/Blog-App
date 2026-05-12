@@ -1,94 +1,159 @@
-import exp from 'express';
-import bcrypt from 'bcryptjs';
-import { authenticate } from '../services/authService.js';
-import { UserTypeModel } from '../Models/UserModel.js';
-import { verifyToken } from '../middlewares/VerifyToken.js';
-export const commonRoute = exp.Router();
-// Login
-commonRoute.post("/login", async (req, res) => {
+import { create } from "zustand";
+import axios from "axios";
+import BASE_URL from "../utils/baseURL";
+
+const savedUser =
+  typeof window !== "undefined"
+    ? JSON.parse(localStorage.getItem("currentUser") || "null")
+    : null;
+
+export const useAuth = create((set) => ({
+  currentUser: savedUser,
+  loading: false,
+  isAuthenticated: Boolean(savedUser),
+  error: null,
+
+  // ================= LOGIN =================
+  login: async (userCredObj) => {
     try {
-        //Get credentials from body
-        const userCred = req.body;
 
-        // Call authenticate service
-        const { token, user } = await authenticate(userCred);
+      set({
+        loading: true,
+        error: null,
+      });
 
-        // Save token in httpOnly cookie
-        res.cookie("token", token, {
-            httpOnly: true,
-            sameSite: "none",
-            secure: true, // true in production (HTTPS)
-        });
+      // login request
+      const res = await axios.post(
+        `${BASE_URL}/common-api/login`,
+        userCredObj,
+        {
+          withCredentials: true,
+        }
+      );
 
-        // Send response
-        res.status(200).json({
-            message: "Login successful",
-            payload: user,
-            token: token // for testing
-        });
+      const userData = res.data.payload;
+
+      // save user in localStorage
+      localStorage.setItem(
+        "currentUser",
+        JSON.stringify(userData)
+      );
+
+      // update state
+      set({
+        currentUser: userData,
+        isAuthenticated: true,
+        loading: false,
+        error: null,
+      });
 
     } catch (err) {
-        res.status(err.status || 500).json({ message: err.message });
+
+      console.log("Login error:", err);
+
+      localStorage.removeItem("currentUser");
+
+      set({
+        currentUser: null,
+        isAuthenticated: false,
+        loading: false,
+        error:
+          err.response?.data?.message ||
+          err.response?.data?.error ||
+          "Login failed",
+      });
     }
-});
- 
+  },
 
-//logout
-commonRoute.get("/logout",async(req,res)=>{
-        // Clear the cookie named 'token'
-        res.clearCookie('token', {
-          httpOnly: true, // Must match original  settings
-          secure: true,   // Must match original  settings
-          sameSite: 'none' // Must match original  settings
-        });
-        res.status(200).json({ message: 'Logged out successfully' });
-    })
-// Change password (protected route)
-commonRoute.put("/change-password", verifyToken("USER", "AUTHOR", "ADMIN"), async (req, res) => {
+  // ================= LOGOUT =================
+  logout: async () => {
+
     try {
-        //  Extract passwords from body
-        const { currentPassword, newPassword } = req.body;
 
-        // Validate input
-        if (!currentPassword || !newPassword) {
-            return res.status(400).json({ message: "Both passwords are required" });
+      set({
+        loading: true,
+        error: null,
+      });
+
+      await axios.get(
+        `${BASE_URL}/common-api/logout`,
+        {
+          withCredentials: true,
         }
+      );
 
-        //  Get logged-in user using ID from token
-        const userDoc = await UserTypeModel.findById(req.user.userId);
+      // clear local storage
+      localStorage.removeItem("currentUser");
 
-        if (!userDoc) {
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        // Compare current password
-        const isMatch = await bcrypt.compare(currentPassword, userDoc.password);
-
-        if (!isMatch) {
-            return res.status(401).json({ message: "Current password is incorrect" });
-        }
-
-        // Prevent using same password again
-        const isSamePassword = await bcrypt.compare(newPassword, userDoc.password);
-
-        if (isSamePassword) {
-            return res.status(400).json({ message: "New password cannot be same as old password" });
-        }
-
-        //  Hash new password
-        userDoc.password = newPassword;
-
-        // Save updated doc
-        await userDoc.save();
-
-        // Success res
-        res.status(200).json({ message: "Password changed successfully" });
+      // clear state
+      set({
+        currentUser: null,
+        isAuthenticated: false,
+        loading: false,
+        error: null,
+      });
 
     } catch (err) {
-        res.status(500).json({ message: err.message });
+
+      console.log("Logout error:", err);
+
+      localStorage.removeItem("currentUser");
+
+      set({
+        currentUser: null,
+        isAuthenticated: false,
+        loading: false,
+        error:
+          err.response?.data?.message ||
+          "Logout failed",
+      });
     }
-});
-//page refresh
-commonRoute.get("/check-auth", verifyToken("USER","AUTHOR","ADMIN"), (req, res) => {
-    res.status(200).json({ message: "authenticated", payload: req.user });
-});
+  },
+
+  // ================= CHECK AUTH =================
+  checkAuth: async () => {
+
+    try {
+
+      set({
+        loading: true,
+      });
+
+      const res = await axios.get(
+        `${BASE_URL}/common-api/check-auth`,
+        {
+          withCredentials: true,
+        }
+      );
+
+      const user = res.data.payload;
+
+      // store user
+      localStorage.setItem(
+        "currentUser",
+        JSON.stringify(user)
+      );
+
+      set({
+        currentUser: user,
+        isAuthenticated: true,
+        loading: false,
+        error: null,
+      });
+
+    } catch (err) {
+
+      console.log("Check auth error:", err);
+
+      // remove invalid user
+      localStorage.removeItem("currentUser");
+
+      set({
+        currentUser: null,
+        isAuthenticated: false,
+        loading: false,
+        error: null,
+      });
+    }
+  },
+}));

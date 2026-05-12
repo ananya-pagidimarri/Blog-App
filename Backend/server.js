@@ -1,59 +1,76 @@
 import exp from "express";
 import { connect } from "mongoose";
 import { config } from "dotenv";
-import { userRoute } from "./APIs/UserAPI.js";
 import cookieParser from "cookie-parser";
+import cors from "cors";
+
+// routes
+import { userRoute } from "./APIs/UserAPI.js";
 import { authorRoute } from "./APIs/Author.API.js";
 import { commonRoute } from "./APIs/CommonAPI.js";
 import { adminRoute } from "./APIs/AdminAPI.js";
-import cors from "cors";
 
 config();
 
 // create app
 const app = exp();
 
+// VERY IMPORTANT FOR RENDER + COOKIES
+app.set("trust proxy", 1);
 
-// ✅ CORS (VERY IMPORTANT - FINAL FIX)
-app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "https://blog-app-ahtk.vercel.app"
-  ],
-  credentials: true,
-}));
+// CORS
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://blog-app-ahtk.vercel.app",
+    ],
+    credentials: true,
+  })
+);
 
-// ✅ middlewares
+// middlewares
 app.use(exp.json());
+app.use(exp.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-
-// ✅ routes
+// routes
 app.use("/user-api", userRoute);
 app.use("/author-api", authorRoute);
 app.use("/admin-api", adminRoute);
 app.use("/common-api", commonRoute);
 
+// logout route
+app.post("/logout", (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "None",
+  });
 
-// ✅ DB + SERVER START
+  res.status(200).json({
+    message: "Logged out successfully",
+  });
+});
+
+// DB + SERVER START
 const startServer = async () => {
   try {
-
     // check env
     if (!process.env.DB_URL) {
-      console.log("❌ DB_URL missing in Render");
+      console.log("❌ DB_URL missing");
       process.exit(1);
     }
 
     await connect(process.env.DB_URL);
-    console.log("✅ DB connection success");
+
+    console.log("✅ MongoDB connected");
 
     const PORT = process.env.PORT || 5000;
 
     app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
     });
-
   } catch (err) {
     console.log("❌ DB connection error:", err.message);
     process.exit(1);
@@ -62,63 +79,55 @@ const startServer = async () => {
 
 startServer();
 
-
-// ✅ logout route
-app.post("/logout", (req, res) => {
-  res.clearCookie("token", {
-    httpOnly: true,
-    secure: true,      // required for HTTPS
-    sameSite: "none"   // required for cross-origin
-  });
-
-  res.status(200).json({ message: "Logged out successfully" });
-});
-
-
-// ✅ 404 handler
+// 404 handler
 app.use((req, res) => {
-  res.status(404).json({ message: `Invalid path: ${req.url}` });
+  res.status(404).json({
+    message: `Invalid path: ${req.url}`,
+  });
 });
 
-
-// ✅ global error handler
+// global error handler
 app.use((err, req, res, next) => {
+  console.log("❌ Error:", err);
 
-  console.log("Error:", err);
-
+  // mongoose validation error
   if (err.name === "ValidationError") {
     return res.status(400).json({
-      message: "error occurred",
-      error: err.message
+      message: "Validation error",
+      error: err.message,
     });
   }
 
+  // invalid mongodb id
   if (err.name === "CastError") {
     return res.status(400).json({
-      message: "error occurred",
-      error: err.message
+      message: "Invalid ID",
+      error: err.message,
     });
   }
 
+  // duplicate key
   if (err.code === 11000) {
     const field = Object.keys(err.keyValue)[0];
     const value = err.keyValue[field];
 
     return res.status(409).json({
-      message: "error occurred",
-      error: `${field} "${value}" already exists`
+      message: "Duplicate field",
+      error: `${field} "${value}" already exists`,
     });
   }
 
+  // custom errors
   if (err.status) {
     return res.status(err.status).json({
-      message: "error occurred",
-      error: err.message
+      message: "Error occurred",
+      error: err.message,
     });
   }
 
+  // default
   res.status(500).json({
-    message: "error occurred",
-    error: "Server side error"
+    message: "Server error",
+    error: "Internal server error",
   });
 });
