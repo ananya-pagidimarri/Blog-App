@@ -11,10 +11,9 @@ import {
   mutedText,
   linkClass,
 } from "../styles/common";
-import { NavLink } from "react-router";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../store/authStore";
 import { useEffect } from "react";
-import { useNavigate } from "react-router";
 import { toast } from "react-hot-toast";
 
 function Login() {
@@ -34,11 +33,11 @@ function Login() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      if (currentUser.role === "USER") {
+      if (currentUser?.role === "USER") {
         toast.success("Loggedin successfully");
         navigate("/user-profile");
       }
-      if (currentUser.role === "AUTHOR") {
+      if (currentUser?.role === "AUTHOR") {
         navigate("/author-profile");
       }
     }

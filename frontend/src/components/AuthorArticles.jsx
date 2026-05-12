@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router";
 import { useAuth } from "../store/authStore";
-import BASE_URL from "../utils/baseURL";
+import BASE_URL from "src/utils/baseURL.js";
 
 import {
   articleCardClass,

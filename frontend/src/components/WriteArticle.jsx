@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { useState } from "react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 
 import {
   formCard,
@@ -15,7 +15,7 @@ import {
   loadingClass,
 } from "../styles/common";
 import { useAuth } from "../store/authStore";
-import BASE_URL from "../utils/baseURL";
+import BASE_URL from "src/utils/baseURL.js";
 
 function WriteArticle() {
   const navigate = useNavigate();

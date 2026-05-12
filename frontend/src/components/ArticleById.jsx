@@ -1,4 +1,4 @@
-import { useParams, useLocation, useNavigate } from "react-router";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useAuth } from "../store/authStore";
@@ -20,7 +20,7 @@ import {
   inputClass,
 } from "../styles/common.js";
 import { useForm } from "react-hook-form";
-import BASE_URL from "../utils/baseURL";
+import BASE_URL from "src/utils/baseURL.js";
 
 function ArticleByID() {
   const { id } = useParams();

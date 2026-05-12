@@ -1,9 +1,9 @@
 import { useForm } from "react-hook-form";
-import { useLocation, useNavigate, useParams } from "react-router";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
-import BASE_URL from "../utils/baseURL";
+import BASE_URL from "src/utils/baseURL.js";
 
 import {
   formCard,
@@ -15,7 +15,7 @@ import {
   errorClass,
 } from "../styles/common";
 
-function EditArticle() {
+function EditArticleForm() {
   const location = useLocation();
   const navigate = useNavigate();
   const { id } = useParams();
@@ -103,4 +103,4 @@ function EditArticle() {
   );
 }
 
-export default EditArticle;
+export default EditArticleForm;

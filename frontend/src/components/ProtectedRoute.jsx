@@ -1,5 +1,5 @@
 import { useAuth } from "../store/authStore";
-import { Navigate} from "react-router";
+import { Navigate} from "react-router-dom";
 
 function ProtectedRoute({ children, allowedRoles }) {
   //get user login status from store

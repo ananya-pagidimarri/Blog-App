@@ -12,11 +12,10 @@ import {
   divider,
   loadingClass,
 } from "../styles/common";
-import { NavLink } from "react-router";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router";
-import BASE_URL from "../utils/baseURL";
+import BASE_URL from "src/utils/baseURL.js";
 
 function Register() {
   const { register, handleSubmit } = useForm();
@@ -185,7 +184,7 @@ function Register() {
 
             {preview && (
               <div className="mt-3 flex justify-center">
-                <img src={preview} className="w-24 h-24 rounded-full" />
+                <img src={preview} className="w-24 h-24 rounded-full" alt="preview" />
               </div>
             )}
           </div>

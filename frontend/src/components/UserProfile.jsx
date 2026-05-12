@@ -1,9 +1,9 @@
 import { useAuth } from "../store/authStore";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import BASE_URL from "../utils/baseURL";
+import BASE_URL from "src/utils/baseURL.js";
 
 import {
   articleGrid,
