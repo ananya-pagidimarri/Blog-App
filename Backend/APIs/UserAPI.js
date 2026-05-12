@@ -47,7 +47,7 @@ userRoute.get("/articles", verifyToken("USER"), async (req, res) => {
   const articles = await ArticleModel.find({ isArticleActive: true }).populate("comments.user", "email firstName");
   res.json({ message: "List of all articles", payload: articles });
 });
-userRoute.put("/articles", verifyToken("USER"), async (req, res) => {
+userRoute.put("/articles", verifyToken("USER", "AUTHOR", "ADMIN"), async (req, res) => {
   try {
     //get comment obj from req (removed 'user' since verifyToken handles auth)
     const { articleId, comment } = req.body;
@@ -79,7 +79,7 @@ userRoute.put("/articles", verifyToken("USER"), async (req, res) => {
 });
 
 // Optional: Get comments for an article
-userRoute.get("/articles/:id/comments", verifyToken("USER"), async (req, res) => {
+userRoute.get("/articles/:id/comments", verifyToken("USER", "AUTHOR", "ADMIN"), async (req, res) => {
   try {
     const article = await ArticleModel.findById(req.params.id)
       .populate("comments.user", "email firstName")
