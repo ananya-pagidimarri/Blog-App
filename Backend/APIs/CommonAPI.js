@@ -44,7 +44,7 @@ commonRoute.get("/logout",async(req,res)=>{
         res.status(200).json({ message: 'Logged out successfully' });
     })
 // Change password (protected route)
-commonRoute.put("/change-password", verifyToken, async (req, res) => {
+commonRoute.put("/change-password", verifyToken("USER", "AUTHOR", "ADMIN"), async (req, res) => {
     try {
         //  Extract passwords from body
         const { currentPassword, newPassword } = req.body;
@@ -55,7 +55,7 @@ commonRoute.put("/change-password", verifyToken, async (req, res) => {
         }
 
         //  Get logged-in user using ID from token
-        const userDoc = await UserTypeModel.findById(req.userId);
+        const userDoc = await UserTypeModel.findById(req.user.userId);
 
         if (!userDoc) {
             return res.status(404).json({ message: "User not found" });
@@ -76,10 +76,7 @@ commonRoute.put("/change-password", verifyToken, async (req, res) => {
         }
 
         //  Hash new password
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-        // Update pass
-        userDoc.password = hashedPassword;
+        userDoc.password = newPassword;
 
         // Save updated doc
         await userDoc.save();

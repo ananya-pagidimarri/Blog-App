@@ -34,6 +34,9 @@ export const verifyToken = (...allowedRoles) => {
         return res.status(401).json({ message: "Invalid token. Please login again." });
       }
       // next(err);
+      return res.status(500).json({
+  message: "Internal server error"
+});
     }
   }; 
 };
