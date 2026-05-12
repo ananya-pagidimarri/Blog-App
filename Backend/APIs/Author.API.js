@@ -1,7 +1,6 @@
 import exp from "express";
-import { authenticate, register } from "../services/authService.js";
+import { register } from "../services/authService.js";
 import { ArticleModel } from "../Models/ArticleModel.js";
-import { checkAuthor } from "../middlewares/checkAuthor.js";
 import { verifyToken } from "../middlewares/VerifyToken.js";
 import { upload } from "../config/multer.js";
 import cloudinary from "../config/cloudinary.js";
@@ -9,167 +8,332 @@ import { uploadToCloudinary } from "../config/cloudinaryUpload.js";
 
 export const authorRoute = exp.Router();
 
-//Register author(public)
-authorRoute.post("/users", upload.single("profileImageUrl"), async (req, res, next) => {
-  let cloudinaryResult;
 
-  try {
-    //getb user obj
-    let userObj = req.body;
+// ✅ Register Author
+authorRoute.post(
+  "/users",
+  upload.single("profileImageUrl"),
+  async (req, res, next) => {
 
-    //  Step 1: upload image to cloudinary from memoryStorage (if exists)
-    if (req.file) {
-      cloudinaryResult = await uploadToCloudinary(req.file.buffer);
+    let cloudinaryResult;
+
+    try {
+
+      // get user object
+      let userObj = req.body;
+
+      // upload image to cloudinary
+      if (req.file) {
+        cloudinaryResult = await uploadToCloudinary(req.file.buffer);
+      }
+
+      // register author
+      const newUserObj = await register({
+        ...userObj,
+        role: "AUTHOR",
+        profileImageUrl: cloudinaryResult?.secure_url,
+      });
+
+      res.status(201).json({
+        message: "Author created successfully",
+        payload: newUserObj,
+      });
+
+    } catch (err) {
+
+      // rollback cloudinary image if DB fails
+      if (cloudinaryResult?.public_id) {
+        await cloudinary.uploader.destroy(cloudinaryResult.public_id);
+      }
+
+      next(err);
     }
+  }
+);
 
-    // Step 2: call existing register()
-    const newUserObj = await register({
-      ...userObj,
-      role: "AUTHOR",
-      profileImageUrl: cloudinaryResult?.secure_url,
-    });
 
-    res.status(201).json({
-      message: "user created",
-      payload: newUserObj,
-    });
-  } catch (err) {
-    // Step 3: rollback
-    if (cloudinaryResult?.public_id) {
-      await cloudinary.uploader.destroy(cloudinaryResult.public_id);
+// ✅ Create Article
+authorRoute.post(
+  "/articles",
+  verifyToken("AUTHOR"),
+  async (req, res) => {
+
+    try {
+
+      let article = req.body;
+
+      // assign logged-in author automatically
+      article.author = req.user.userId;
+
+      // create document
+      let newArticleDoc = new ArticleModel(article);
+
+      // save article
+      let createdArticleDoc = await newArticleDoc.save();
+
+      res.status(201).json({
+        message: "Article created successfully",
+        payload: createdArticleDoc,
+      });
+
+    } catch (err) {
+
+      console.error("Create article error:", err);
+
+      res.status(500).json({
+        message: "Internal server error",
+      });
     }
-
-    next(err); // send to your error middleware
   }
-});
+);
 
-//Create article(protected route)
-authorRoute.post("/articles",verifyToken("AUTHOR") ,checkAuthor, async (req, res) => {
-  //get article from req
-  let article = req.body;
 
-  //create article document
-  let newArticleDoc = new ArticleModel(article);
-  //save
-  let createdArticleDoc = await newArticleDoc.save();
-  //send res
-  res.status(201).json({ message: "article created", payload: createdArticleDoc });
-});
+// ✅ Read Articles Of Logged-in Author
+authorRoute.get(
+  "/articles",
+  verifyToken("AUTHOR"),
+  async (req, res) => {
 
-//Read artiles of author(protected route)
-authorRoute.get("/articles/:authorId",verifyToken("AUTHOR") ,checkAuthor, async (req, res) => {
-  //get author id
-  let aid = req.params.authorId;
+    try {
 
-  //read atricles by this author which are acticve
-  let articles = await ArticleModel.find({ author: aid, isArticleActive: true }).populate("author", "firstName email");
-  //send res
-  res.status(200).json({ message: "articles", payload: articles });
-});
+      // logged in author id
+      let aid = req.user.userId;
 
-//edit article(protected route)
-authorRoute.put("/articles", verifyToken("AUTHOR"), async (req, res) => {
-  console.log(req.body);
-  let author = req.user.userId;
-  //get modified article from req
-  let { articleId, title, category, content } = req.body;
-  console.log(articleId, author);
-  //find article
-  let articleOfDB = await ArticleModel.findOne({ _id: articleId, author: author });
-  console.log(articleOfDB);
-  if (!articleOfDB) {
-    return res.status(401).json({ message: "Article not found" });
+      // fetch active articles
+      let articles = await ArticleModel.find({
+        author: aid,
+        isArticleActive: true,
+      }).populate("author", "firstName email profileImageUrl");
+
+      res.status(200).json({
+        message: "Articles fetched successfully",
+        payload: articles,
+      });
+
+    } catch (err) {
+
+      console.error("Fetch articles error:", err);
+
+      res.status(500).json({
+        message: "Internal server error",
+      });
+    }
   }
-  //update the article
-  let updatedArticle = await ArticleModel.findByIdAndUpdate(
-    articleId,
-    {
-      $set: { title, category, content },
-    },
-    { new: true },
-  );
-  //send res(updated article)
-  res.status(200).json({ message: "article updated", payload: updatedArticle });
-});
-//delete(soft delete) article(Protected route)
-authorRoute.patch("/articles/:id/status", verifyToken("AUTHOR"), async (req, res) => {
-  const { id } = req.params;
-  const { isArticleActive } = req.body;
-  // Find article
-  const article = await ArticleModel.findById(id); //.populate("author");
-  console.log(article);
-  if (!article) {
-    return res.status(404).json({ message: "Article not found" });
-  }
+);
 
-  //console.log(req.user.userId,article.author.toString())
-  // AUTHOR can only modify their own articles
-  if (req.user.role === "AUTHOR" && article.author.toString() !== req.user.userId) {
-    return res.status(403).json({ message: "Forbidden. You can only modify your own articles" });
-  }
-  // Already in requested state
-  if (article.isArticleActive === isArticleActive) {
-    return res.status(400).json({
-      message: `Article is already ${isArticleActive ? "active" : "deleted"}`,
-    });
-  }
 
-  //update status
-  article.isArticleActive = isArticleActive;
-  await article.save();
+// ✅ Edit Article
+authorRoute.put(
+  "/articles",
+  verifyToken("AUTHOR"),
+  async (req, res) => {
 
-  //send res
-  res.status(200).json({
-    message: `Article ${isArticleActive ? "restored" : "deleted"} successfully`,
-    payload: article, // ✅ use payload instead of article
-  });
-});
-// Add comment to article (for logged-in users)
+    try {
+
+      let author = req.user.userId;
+
+      // get modified data
+      let {
+        articleId,
+        title,
+        category,
+        content
+      } = req.body;
+
+      // find article
+      let articleOfDB = await ArticleModel.findOne({
+        _id: articleId,
+        author: author,
+      });
+
+      if (!articleOfDB) {
+        return res.status(404).json({
+          message: "Article not found",
+        });
+      }
+
+      // update article
+      let updatedArticle = await ArticleModel.findByIdAndUpdate(
+        articleId,
+        {
+          $set: {
+            title,
+            category,
+            content,
+          },
+        },
+        {
+          new: true,
+          runValidators: true,
+        }
+      );
+
+      res.status(200).json({
+        message: "Article updated successfully",
+        payload: updatedArticle,
+      });
+
+    } catch (err) {
+
+      console.error("Update article error:", err);
+
+      res.status(500).json({
+        message: "Internal server error",
+      });
+    }
+  }
+);
+
+
+// ✅ Soft Delete / Restore Article
+authorRoute.patch(
+  "/articles/:id/status",
+  verifyToken("AUTHOR"),
+  async (req, res) => {
+
+    try {
+
+      const { id } = req.params;
+      const { isArticleActive } = req.body;
+
+      // find article
+      const article = await ArticleModel.findById(id);
+
+      if (!article) {
+        return res.status(404).json({
+          message: "Article not found",
+        });
+      }
+
+      // allow only owner author
+      if (
+        article.author.toString() !== req.user.userId
+      ) {
+        return res.status(403).json({
+          message: "Forbidden",
+        });
+      }
+
+      // already same state
+      if (article.isArticleActive === isArticleActive) {
+        return res.status(400).json({
+          message: `Article is already ${
+            isArticleActive ? "active" : "deleted"
+          }`,
+        });
+      }
+
+      // update status
+      article.isArticleActive = isArticleActive;
+
+      await article.save();
+
+      res.status(200).json({
+        message: `Article ${
+          isArticleActive ? "restored" : "deleted"
+        } successfully`,
+        payload: article,
+      });
+
+    } catch (err) {
+
+      console.error("Delete/Restore article error:", err);
+
+      res.status(500).json({
+        message: "Internal server error",
+      });
+    }
+  }
+);
+
+
+// ✅ Add Comment
 authorRoute.post(
   "/articles/:id/comments",
-  verifyToken("USER"), // or verifyToken("AUTHOR", "USER") based on your policy
-  async (req, res, next) => {
+  verifyToken("USER", "AUTHOR", "ADMIN"),
+  async (req, res) => {
+
     try {
+
       const { id } = req.params;
       const { comment } = req.body;
 
+      // validation
       if (!comment || !comment.trim()) {
-        return res.status(400).json({ message: "Comment text is required" });
+        return res.status(400).json({
+          message: "Comment text is required",
+        });
       }
 
+      // find article
       const article = await ArticleModel.findById(id);
+
       if (!article || !article.isArticleActive) {
-        return res.status(404).json({ message: "Article not found or inactive" });
+        return res.status(404).json({
+          message: "Article not found or inactive",
+        });
       }
 
+      // create comment
       const newComment = {
         user: req.user.userId,
         comment: comment.trim(),
       };
 
+      // push comment
       article.comments.push(newComment);
+
       await article.save();
 
-      return res.status(201).json({
-        message: "Comment added",
+      res.status(201).json({
+        message: "Comment added successfully",
         payload: newComment,
       });
+
     } catch (err) {
-      next(err);
+
+      console.error("Comment error:", err);
+
+      res.status(500).json({
+        message: "Internal server error",
+      });
     }
   }
 );
+
+
+// ✅ Get Comments
 authorRoute.get(
   "/articles/:id/comments",
-  verifyToken("USER"), // or public if you want non-auth users
-  async (req, res, next) => {
+  verifyToken("USER", "AUTHOR", "ADMIN"),
+  async (req, res) => {
+
     try {
+
       const article = await ArticleModel.findById(req.params.id)
-        .populate("comments.user", "firstName lastName profileImageUrl");
-      if (!article) return res.status(404).json({ message: "Not found" });
-      return res.status(200).json({ message: "Comments", payload: article.comments });
+        .populate(
+          "comments.user",
+          "firstName lastName email profileImageUrl"
+        );
+
+      if (!article) {
+        return res.status(404).json({
+          message: "Article not found",
+        });
+      }
+
+      res.status(200).json({
+        message: "Comments fetched successfully",
+        payload: article.comments,
+      });
+
     } catch (err) {
-      next(err);
+
+      console.error("Get comments error:", err);
+
+      res.status(500).json({
+        message: "Internal server error",
+      });
     }
   }
 );
