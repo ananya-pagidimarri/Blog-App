@@ -12,6 +12,8 @@ export const verifyToken = (...allowedRoles) => {
       // get token from cookies
       const token = req.cookies.token;
 
+      console.log("TOKEN:", token);
+
       // token missing
       if (!token) {
         return res.status(401).json({
@@ -19,19 +21,21 @@ export const verifyToken = (...allowedRoles) => {
         });
       }
 
-      // verify token
-      const decoded = jwt.verify(
+      // verify jwt
+      const decodedToken = jwt.verify(
         token,
         process.env.SECRET_KEY
       );
 
+      console.log("DECODED:", decodedToken);
+
       // attach user
-      req.user = decoded;
+      req.user = decodedToken;
 
       // role check
       if (
         allowedRoles.length > 0 &&
-        !allowedRoles.includes(decoded.role)
+        !allowedRoles.includes(decodedToken.role)
       ) {
         return res.status(403).json({
           message: "Forbidden",
@@ -42,7 +46,7 @@ export const verifyToken = (...allowedRoles) => {
 
     } catch (err) {
 
-      console.log("Verify token error:", err.message);
+      console.log("VERIFY ERROR:", err.message);
 
       return res.status(401).json({
         message: "Invalid token",
