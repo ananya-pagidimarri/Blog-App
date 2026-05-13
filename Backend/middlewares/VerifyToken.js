@@ -3,9 +3,9 @@ import { config } from "dotenv";
 
 config();
 
-export const verifyToken = (...roles) => {
+export const verifyToken = (...allowedRoles) => {
 
-  return async (req, res, next) => {
+  return (req, res, next) => {
 
     try {
 
@@ -15,23 +15,23 @@ export const verifyToken = (...roles) => {
       // token missing
       if (!token) {
         return res.status(401).json({
-          message: "Unauthorized - token missing",
+          message: "Token missing",
         });
       }
 
       // verify token
-      const decodedToken = jwt.verify(
+      const decoded = jwt.verify(
         token,
         process.env.SECRET_KEY
       );
 
       // attach user
-      req.user = decodedToken;
+      req.user = decoded;
 
-      // role authorization
+      // role check
       if (
-        roles.length > 0 &&
-        !roles.includes(decodedToken.role)
+        allowedRoles.length > 0 &&
+        !allowedRoles.includes(decoded.role)
       ) {
         return res.status(403).json({
           message: "Forbidden",
@@ -45,7 +45,7 @@ export const verifyToken = (...roles) => {
       console.log("Verify token error:", err.message);
 
       return res.status(401).json({
-        message: "Invalid or expired token",
+        message: "Invalid token",
       });
     }
   };
