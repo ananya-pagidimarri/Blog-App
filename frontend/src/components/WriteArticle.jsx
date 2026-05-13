@@ -14,13 +14,20 @@ import {
   errorClass,
   loadingClass,
 } from "../styles/common";
+
 import { useAuth } from "../store/authStore";
+
 import BASE_URL from "../utils/baseURL";
 
 function WriteArticle() {
+
   const navigate = useNavigate();
+
   const [loading, setLoading] = useState(false);
-  const currentUser=useAuth(state=>state.currentUser)
+
+  const currentUser = useAuth(
+    (state) => state.currentUser
+  );
 
   const {
     register,
@@ -29,40 +36,74 @@ function WriteArticle() {
     reset,
   } = useForm();
 
+  // ================= SUBMIT ARTICLE =================
   const submitArticle = async (articleObj) => {
+
     setLoading(true);
 
-    //add authorId to articleObj
-    articleObj.author=currentUser._id;
     try {
-      await axios.post(
+
+      // ADD AUTHOR ID
+      articleObj.author = currentUser._id;
+
+      // GET TOKEN
+      const token = localStorage.getItem("token");
+
+      console.log("TOKEN:", token);
+
+      // API CALL
+      const res = await axios.post(
         `${BASE_URL}/author-api/articles`,
         articleObj,
-        { withCredentials: true }
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
-      toast.success("Article published successfully!");
+      console.log("article response", res.data);
+
+      toast.success(
+        "Article published successfully!"
+      );
 
       reset();
 
       navigate("/author-profile/articles");
 
     } catch (err) {
-      toast.error(err.response?.data?.error || "Failed to publish article");
+
+      console.log(err);
+
+      toast.error(
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        "Failed to publish article"
+      );
+
     } finally {
+
       setLoading(false);
     }
   };
 
   return (
+
     <div className={formCard}>
-      <h2 className={formTitle}>Write New Article</h2>
+
+      <h2 className={formTitle}>
+        Write New Article
+      </h2>
 
       <form onSubmit={handleSubmit(submitArticle)}>
 
-        {/* Title */}
+        {/* TITLE */}
         <div className={formGroup}>
-          <label className={labelClass}>Title</label>
+
+          <label className={labelClass}>
+            Title
+          </label>
 
           <input
             type="text"
@@ -72,19 +113,26 @@ function WriteArticle() {
               required: "Title is required",
               minLength: {
                 value: 5,
-                message: "Title must be at least 5 characters",
+                message:
+                  "Title must be at least 5 characters",
               },
             })}
           />
 
           {errors.title && (
-            <p className={errorClass}>{errors.title.message}</p>
+            <p className={errorClass}>
+              {errors.title.message}
+            </p>
           )}
+
         </div>
 
-        {/* Category */}
+        {/* CATEGORY */}
         <div className={formGroup}>
-          <label className={labelClass}>Category</label>
+
+          <label className={labelClass}>
+            Category
+          </label>
 
           <select
             className={inputClass}
@@ -92,21 +140,43 @@ function WriteArticle() {
               required: "Category is required",
             })}
           >
-            <option value="">Select category</option>
-            <option value="technology">Technology</option>
-            <option value="programming">Programming</option>
-            <option value="ai">AI</option>
-            <option value="web-development">Web Development</option>
+
+            <option value="">
+              Select category
+            </option>
+
+            <option value="technology">
+              Technology
+            </option>
+
+            <option value="programming">
+              Programming
+            </option>
+
+            <option value="ai">
+              AI
+            </option>
+
+            <option value="web-development">
+              Web Development
+            </option>
+
           </select>
 
           {errors.category && (
-            <p className={errorClass}>{errors.category.message}</p>
+            <p className={errorClass}>
+              {errors.category.message}
+            </p>
           )}
+
         </div>
 
-        {/* Content */}
+        {/* CONTENT */}
         <div className={formGroup}>
-          <label className={labelClass}>Content</label>
+
+          <label className={labelClass}>
+            Content
+          </label>
 
           <textarea
             rows="8"
@@ -116,24 +186,37 @@ function WriteArticle() {
               required: "Content is required",
               minLength: {
                 value: 50,
-                message: "Content must be at least 50 characters",
+                message:
+                  "Content must be at least 50 characters",
               },
             })}
           />
 
           {errors.content && (
-            <p className={errorClass}>{errors.content.message}</p>
+            <p className={errorClass}>
+              {errors.content.message}
+            </p>
           )}
+
         </div>
 
-        {/* Submit */}
-        <button className={submitBtn} type="submit" disabled={loading}>
-          {loading ? "Publishing..." : "Publish Article"}
+        {/* SUBMIT */}
+        <button
+          className={submitBtn}
+          type="submit"
+          disabled={loading}
+        >
+          {loading
+            ? "Publishing..."
+            : "Publish Article"}
         </button>
 
         {loading && (
-          <p className={loadingClass}>Publishing article...</p>
+          <p className={loadingClass}>
+            Publishing article...
+          </p>
         )}
+
       </form>
     </div>
   );
