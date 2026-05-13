@@ -42,11 +42,17 @@ function EditArticleForm() {
   const updateArticle = async (data) => {
     setLoading(true);
     try {
+          // GET TOKEN
+      const token = localStorage.getItem("token");
       await axios.put(
-        `${BASE_URL}/author-api/articles/${id}`,
-        data,
-        { withCredentials: true }
-      );
+          `${BASE_URL}/author-api/articles/${id}`,
+          data,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
       toast.success("Article updated successfully!");
       navigate("/author-profile/articles");
