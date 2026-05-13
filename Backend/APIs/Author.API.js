@@ -120,7 +120,42 @@ authorRoute.get(
     }
   }
 );
+// ✅ Get Articles By Author ID
+authorRoute.get(
+  "/articles/author/:authorId",
+  verifyToken("AUTHOR"),
+  async (req, res) => {
 
+    try {
+
+      const { authorId } = req.params;
+
+      // fetch articles
+      const articles = await ArticleModel.find({
+        author: authorId,
+      })
+        .populate(
+          "author",
+          "firstName lastName email profileImageUrl"
+        )
+        .sort({ createdAt: -1 });
+
+      res.status(200).json({
+        message: "Author articles fetched successfully",
+        payload: articles,
+      });
+
+    } catch (err) {
+
+      console.error("Fetch author articles error:", err);
+
+      res.status(500).json({
+        message: "Internal server error",
+        error: err.message,
+      });
+    }
+  }
+);
 
 // ✅ Edit Article
 authorRoute.put(
