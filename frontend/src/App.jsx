@@ -36,14 +36,14 @@ function App() {
         {
           path: "user-profile",
           element: 
-          <ProtectedRoute allowedRoles={["user"]}>
+          <ProtectedRoute allowedRoles={["USER"]}>
           <UserProfile />,
           </ProtectedRoute>
         },
         {
           path: "author-profile",
           element: 
-          <ProtectedRoute allowedRoles={["author"]}>
+          <ProtectedRoute allowedRoles={["AUTHOR"]}>
             <AuthorProfile />
           </ProtectedRoute>,
           children: [
