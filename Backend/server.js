@@ -27,9 +27,10 @@ app.use(
 );
 
 // middlewares
+app.use(cookieParser());
+
 app.use(exp.json());
 app.use(exp.urlencoded({ extended: true }));
-app.use(cookieParser());
 
 // routes
 app.use("/user-api", userRoute);
@@ -42,7 +43,8 @@ app.post("/logout", (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
     secure: true,
-    sameSite: "None",
+    sameSite: "none",
+    path: "/",
   });
 
   res.status(200).json({

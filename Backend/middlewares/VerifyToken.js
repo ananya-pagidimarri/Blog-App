@@ -10,6 +10,7 @@ export const verifyToken = (...allowedRoles) => {
     try {
 
       // get token from cookies
+      console.log("COOKIES:", req.cookies);
       const token = req.cookies.token;
 
       console.log("TOKEN:", token);
