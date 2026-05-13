@@ -5,16 +5,14 @@ config();
 
 export const verifyToken = (...allowedRoles) => {
 
-  return (req, res, next) => {
+  return async (req, res, next) => {
 
     try {
 
-      // GET AUTH HEADER
       const authHeader = req.headers.authorization;
 
       console.log("AUTH HEADER:", authHeader);
 
-      // CHECK TOKEN
       if (
         !authHeader ||
         !authHeader.startsWith("Bearer ")
@@ -24,27 +22,24 @@ export const verifyToken = (...allowedRoles) => {
         });
       }
 
-      // EXTRACT TOKEN
       const token = authHeader.split(" ")[1];
 
-      // VERIFY TOKEN
+      // IMPORTANT FIX
       const decodedToken = jwt.verify(
         token,
-        process.env.SECRET_KEY
+        process.env.JWT_SECRET_KEY
       );
 
-      console.log("DECODED TOKEN:", decodedToken);
+      console.log("DECODED:", decodedToken);
 
-      // ATTACH USER
       req.user = decodedToken;
 
-      // ROLE CHECK
       if (
         allowedRoles.length > 0 &&
         !allowedRoles.includes(decodedToken.role)
       ) {
         return res.status(403).json({
-          message: "Forbidden",
+          message: "Access denied",
         });
       }
 
@@ -56,6 +51,7 @@ export const verifyToken = (...allowedRoles) => {
 
       return res.status(401).json({
         message: "Invalid token",
+        error: err.message,
       });
     }
   };
