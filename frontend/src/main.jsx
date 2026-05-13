@@ -4,7 +4,7 @@ import axios from "axios";
 import "./index.css";
 import App from "./App.jsx";
 
-// IMPORTANT FOR COOKIES
+// VERY IMPORTANT
 axios.defaults.withCredentials = true;
 
 createRoot(document.getElementById("root")).render(

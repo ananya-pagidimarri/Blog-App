@@ -6,53 +6,62 @@ export const commonRoute = exp.Router();
 
 
 // ================= LOGIN =================
-commonRoute.post("/login", async (req, res, next) => {
+commonRoute.post(
+  "/login",
+  async (req, res, next) => {
 
-  try {
+    try {
 
-    const userCredObj = req.body;
+      const userCredObj = req.body;
 
-    // authenticate user
-    const {
-      token,
-      user,
-    } = await authenticate(userCredObj);
+      // authenticate user
+      const {
+        token,
+        user,
+      } = await authenticate(userCredObj);
 
-    // send token in cookie
-    res.cookie("token", token, {
-  httpOnly: true,
-  secure: true,
-  sameSite: "none",
-  maxAge: 1000 * 60 * 60,
-});
-console.log("Cookie sent successfully");
+      // send token in cookie
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+        path: "/",
+        maxAge: 1000 * 60 * 60, // 1 hour
+      });
 
-    // send response
-    res.status(200).json({
-      message: "Login successful",
-      payload: user,
-    });
+      console.log("Cookie sent successfully");
 
-  } catch (err) {
+      // send response
+      res.status(200).json({
+        message: "Login successful",
+        payload: user,
+      });
 
-    next(err);
+    } catch (err) {
+
+      next(err);
+    }
   }
-});
+);
 
 
 // ================= LOGOUT =================
-commonRoute.get("/logout", (req, res) => {
+commonRoute.get(
+  "/logout",
+  (req, res) => {
 
-  res.clearCookie("token", {
-    httpOnly: true,
-    secure: true,
-    sameSite: "None",
-  });
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      path: "/",
+    });
 
-  res.status(200).json({
-    message: "Logged out successfully",
-  });
-});
+    res.status(200).json({
+      message: "Logged out successfully",
+    });
+  }
+);
 
 
 // ================= CHECK AUTH =================

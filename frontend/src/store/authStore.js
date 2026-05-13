@@ -67,18 +67,46 @@ export const useAuth = create((set) => ({
   },
 
 // restore login
-  checkAuth: async () => {
-    const storedUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("currentUser") || "null") : null;
-    if (storedUser) {
-      set({ currentUser: storedUser, isAuthenticated: true, loading: false });
-      return;
-    }
+checkAuth: async () => {
 
-    // Skip API call - rely on localStorage for persistence
+  try {
+
+    set({
+      loading: true,
+    });
+
+    const res = await axios.get(
+      `${BASE_URL}/common-api/check-auth`,
+      {
+        withCredentials: true,
+      }
+    );
+
+    const user = res.data.payload;
+
+    localStorage.setItem(
+      "currentUser",
+      JSON.stringify(user)
+    );
+
+    set({
+      currentUser: user,
+      isAuthenticated: true,
+      loading: false,
+      error: null,
+    });
+
+  } catch (err) {
+
+    localStorage.removeItem("currentUser");
+
     set({
       currentUser: null,
       isAuthenticated: false,
       loading: false,
+      error: null,
     });
-  },
+  }
+},
+
 }));
