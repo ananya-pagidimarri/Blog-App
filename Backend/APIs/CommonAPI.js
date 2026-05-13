@@ -34,7 +34,10 @@ commonRoute.post(
       // send response
       res.status(200).json({
         message: "Login successful",
-        payload: user,
+        payload: {
+          user,
+          token,
+        },
       });
 
     } catch (err) {

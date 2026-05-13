@@ -9,31 +9,36 @@ export const verifyToken = (...allowedRoles) => {
 
     try {
 
-      // get token from cookies
-      console.log("COOKIES:", req.cookies);
-      const token = req.cookies.token;
+      // GET AUTH HEADER
+      const authHeader = req.headers.authorization;
 
-      console.log("TOKEN:", token);
+      console.log("AUTH HEADER:", authHeader);
 
-      // token missing
-      if (!token) {
+      // CHECK TOKEN
+      if (
+        !authHeader ||
+        !authHeader.startsWith("Bearer ")
+      ) {
         return res.status(401).json({
           message: "Token missing",
         });
       }
 
-      // verify jwt
+      // EXTRACT TOKEN
+      const token = authHeader.split(" ")[1];
+
+      // VERIFY TOKEN
       const decodedToken = jwt.verify(
         token,
         process.env.SECRET_KEY
       );
 
-      console.log("DECODED:", decodedToken);
+      console.log("DECODED TOKEN:", decodedToken);
 
-      // attach user
+      // ATTACH USER
       req.user = decodedToken;
 
-      // role check
+      // ROLE CHECK
       if (
         allowedRoles.length > 0 &&
         !allowedRoles.includes(decodedToken.role)
@@ -47,7 +52,7 @@ export const verifyToken = (...allowedRoles) => {
 
     } catch (err) {
 
-      console.log("VERIFY ERROR:", err.message);
+      console.log("VERIFY TOKEN ERROR:", err);
 
       return res.status(401).json({
         message: "Invalid token",

@@ -16,75 +16,154 @@ import {
 } from "../styles/common";
 
 function AuthorArticles() {
+
   const navigate = useNavigate();
-  const user = useAuth((state) => state.currentUser);
+
+  const user = useAuth(
+    (state) => state.currentUser
+  );
 
   const [articles, setArticles] = useState([]);
+
   const [loading, setLoading] = useState(false);
+
   const [error, setError] = useState(null);
-  console.log("user in author profile",user);
+
+  console.log(
+    "user in author profile",
+    user
+  );
 
   useEffect(() => {
+
     if (!user?._id) return;
 
     const getAuthorArticles = async () => {
+
       setLoading(true);
 
       try {
+
+        // get token
+        const token = localStorage.getItem("token");
+
+        // api call
         const res = await axios.get(
-  `${BASE_URL}/author-api/articles/author/${user._id}`,
-  { withCredentials: true }
-);
+          `${BASE_URL}/author-api/articles/author/${user._id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        console.log("articles response", res.data);
 
         setArticles(res.data.payload);
+
       } catch (err) {
+
         console.log(err);
-        setError(err.response?.data?.error || "Failed to fetch articles");
+
+        setError(
+          err.response?.data?.message ||
+          err.response?.data?.error ||
+          "Failed to fetch articles"
+        );
+
       } finally {
+
         setLoading(false);
       }
     };
 
     getAuthorArticles();
+
   }, [user]);
 
   const openArticle = (article) => {
+
     navigate(`/article/${article._id}`, {
       state: article,
     });
   };
 
   const formatDate = (date) => {
-    return new Date(date).toLocaleString("en-IN", {
-      timeZone: "Asia/Kolkata",
-      dateStyle: "medium",
-    });
+
+    return new Date(date).toLocaleString(
+      "en-IN",
+      {
+        timeZone: "Asia/Kolkata",
+        dateStyle: "medium",
+      }
+    );
   };
 
-  if (loading) return <p className={loadingClass}>Loading articles...</p>;
-  if (error) return <p className={errorClass}>{error}</p>;
+  // loading
+  if (loading) {
+    return (
+      <p className={loadingClass}>
+        Loading articles...
+      </p>
+    );
+  }
 
+  // error
+  if (error) {
+    return (
+      <p className={errorClass}>
+        {error}
+      </p>
+    );
+  }
+
+  // empty state
   if (articles.length === 0) {
-    return <div className={emptyStateClass}>You haven't published any articles yet.</div>;
+    return (
+      <div className={emptyStateClass}>
+        You haven't published any articles yet.
+      </div>
+    );
   }
 
   return (
+
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+
       {articles.map((article) => (
-        <div key={article._id} className={`${articleCardClass} flex flex-col`}>
+
+        <div
+          key={article._id}
+          className={`${articleCardClass} flex flex-col`}
+        >
+
           <div className="flex flex-col gap-2">
-            <p className={articleMeta}>{article.category}</p>
 
-            <p className={articleTitle}>{article.title}</p>
+            <p className={articleMeta}>
+              {article.category}
+            </p>
 
-            <p className={articleExcerpt}>{article.content.slice(0, 60)}...</p>
+            <p className={articleTitle}>
+              {article.title}
+            </p>
 
-            <p className={articleMeta}>{formatDate(article.createdAt)}</p>
+            <p className={articleExcerpt}>
+              {article.content.slice(0, 60)}...
+            </p>
+
+            <p className={articleMeta}>
+              {formatDate(article.createdAt)}
+            </p>
+
           </div>
 
-          <button className={`${ghostBtn} mt-auto pt-4`} onClick={() => openArticle(article)}>
+          <button
+            className={`${ghostBtn} mt-auto pt-4`}
+            onClick={() => openArticle(article)}
+          >
             Read Article →
           </button>
+
         </div>
       ))}
     </div>
