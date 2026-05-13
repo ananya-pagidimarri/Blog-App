@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../store/authStore";
-import BASE_URL from "src/utils/baseURL.js";
+import BASE_URL from "../utils/baseURL";
 
 import {
   articleCardClass,

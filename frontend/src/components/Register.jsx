@@ -15,7 +15,7 @@ import {
 import { NavLink, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import BASE_URL from "src/utils/baseURL.js";
+import BASE_URL from "../utils/baseURL";
 
 function Register() {
   const { register, handleSubmit } = useForm();

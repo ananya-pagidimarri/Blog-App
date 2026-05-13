@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
-import BASE_URL from "src/utils/baseURL.js";
+import BASE_URL from "../utils/baseURL";
 
 import {
   formCard,

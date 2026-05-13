@@ -15,7 +15,7 @@ function ProtectedRoute({ children, allowedRoles }) {
   }
 
   //check roles
-  if (allowedRoles && !allowedRoles.includes(currentUser?.role?.toLowerCase())) {
+  if (allowedRoles && !allowedRoles.includes(currentUser?.role)){
     //redirect to unauthorized
     return <Navigate to="/unauthorized" replace state={{redirectTo:"/"}} />;
   }

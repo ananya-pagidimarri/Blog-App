@@ -15,7 +15,7 @@ import {
   loadingClass,
 } from "../styles/common";
 import { useAuth } from "../store/authStore";
-import BASE_URL from "src/utils/baseURL.js";
+import BASE_URL from "../utils/baseURL";
 
 function WriteArticle() {
   const navigate = useNavigate();

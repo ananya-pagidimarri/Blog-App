@@ -20,9 +20,9 @@ import {
   inputClass,
 } from "../styles/common.js";
 import { useForm } from "react-hook-form";
-import BASE_URL from "src/utils/baseURL.js";
+import BASE_URL from "../utils/baseURL";
 
-function ArticleByID() {
+function ArticleById() {
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -206,4 +206,4 @@ function ArticleByID() {
   );
 }
 
-export default ArticleByID;
+export default ArticleById;
