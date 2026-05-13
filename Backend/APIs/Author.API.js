@@ -123,7 +123,6 @@ authorRoute.get(
 // ✅ Get Articles By Author ID
 authorRoute.get(
   "/articles/author/:authorId",
-  verifyToken("AUTHOR"),
   async (req, res) => {
 
     try {
