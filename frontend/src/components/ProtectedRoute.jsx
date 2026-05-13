@@ -9,6 +9,10 @@ function ProtectedRoute({ children, allowedRoles }) {
     isAuthenticated,
   } = useAuth();
 
+  console.log("Current User:", currentUser);
+  console.log("Allowed Roles:", allowedRoles);
+  console.log("User Role:", currentUser?.role);
+
   if (loading) {
     return <p>Loading...</p>;
   }
