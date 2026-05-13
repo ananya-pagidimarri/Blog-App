@@ -145,59 +145,67 @@ export const useAuth = create((set) => ({
   // ================= CHECK AUTH =================
   checkAuth: async () => {
 
-    try {
+  try {
 
-      set({
-        loading: true,
-      });
+    const token = localStorage.getItem("token");
 
-      // GET TOKEN
-      const token = localStorage.getItem("token");
-
-      // CHECK AUTH API
-      const res = await axios.get(
-        `${BASE_URL}/common-api/check-auth`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          withCredentials: true,
-        }
-      );
-
-      console.log("check auth response", res.data);
-
-      const user = res.data.payload;
-
-      // SAVE USER
-      localStorage.setItem(
-        "currentUser",
-        JSON.stringify(user)
-      );
-
-      // UPDATE STATE
-      set({
-        currentUser: user,
-        isAuthenticated: true,
-        loading: false,
-        error: null,
-      });
-
-    } catch (err) {
-
-      console.log("check auth error", err);
-
-      localStorage.removeItem("token");
-
-      localStorage.removeItem("currentUser");
+    // NO TOKEN -> SKIP API CALL
+    if (!token) {
 
       set({
         currentUser: null,
         isAuthenticated: false,
         loading: false,
-        error: null,
       });
+
+      return;
     }
-  },
+
+    set({
+      loading: true,
+    });
+
+    // API CALL
+    const res = await axios.get(
+      `${BASE_URL}/common-api/check-auth`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    console.log("check auth response", res.data);
+
+    const user = res.data.payload;
+
+    localStorage.setItem(
+      "currentUser",
+      JSON.stringify(user)
+    );
+
+    set({
+      currentUser: user,
+      isAuthenticated: true,
+      loading: false,
+      error: null,
+    });
+
+  } catch (err) {
+
+    console.log("check auth error", err);
+
+    localStorage.removeItem("token");
+
+    localStorage.removeItem("currentUser");
+
+    set({
+      currentUser: null,
+      isAuthenticated: false,
+      loading: false,
+      error: null,
+    });
+  }
+},
 
 }));
