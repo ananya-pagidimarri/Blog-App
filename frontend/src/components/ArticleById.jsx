@@ -42,7 +42,7 @@ function ArticleById() {
       setLoading(true);
       try {
         const res = await axios.get(
-          `${BASE_URL}/articles/${id}`,
+          `${BASE_URL}/user-api/articles/${id}`,
           { withCredentials: true }
         );
         setArticle(res.data.payload);
@@ -76,7 +76,7 @@ function ArticleById() {
 
     try {
       const res = await axios.patch(
-        `${BASE_URL}/articles/${id}/status`,
+        `${BASE_URL}/author-api/articles/${id}/status`,
         { isArticleActive: newStatus },
         { withCredentials: true }
       );
@@ -105,7 +105,7 @@ function ArticleById() {
 
     try {
       const res = await axios.put(
-        `${BASE_URL}/articles`,
+        `${BASE_URL}/user-api/articles`,
         commentObj,
         { withCredentials: true }
       );

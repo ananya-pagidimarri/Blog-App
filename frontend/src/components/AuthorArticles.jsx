@@ -31,7 +31,10 @@ function AuthorArticles() {
       setLoading(true);
 
       try {
-        const res = await axios.get(`${BASE_URL}/articles/author/${user._id}`, { withCredentials: true });
+        const res = await axios.get(
+  `${BASE_URL}/author-api/articles/author/${user._id}`,
+  { withCredentials: true }
+);
 
         setArticles(res.data.payload);
       } catch (err) {

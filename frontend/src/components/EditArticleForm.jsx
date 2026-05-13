@@ -43,7 +43,7 @@ function EditArticleForm() {
     setLoading(true);
     try {
       await axios.put(
-        `${BASE_URL}/articles/${id}`,
+        `${BASE_URL}/author-api/articles/${id}`,
         data,
         { withCredentials: true }
       );
