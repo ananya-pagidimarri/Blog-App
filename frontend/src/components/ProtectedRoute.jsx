@@ -9,17 +9,14 @@ function ProtectedRoute({ children, allowedRoles }) {
     isAuthenticated,
   } = useAuth();
 
-  // loading state
   if (loading) {
     return <p>Loading...</p>;
   }
 
-  // not logged in
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  // role check
   if (
     allowedRoles &&
     !allowedRoles.includes(currentUser?.role)
