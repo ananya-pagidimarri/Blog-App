@@ -3,69 +3,49 @@ import { config } from "dotenv";
 
 config();
 
-export const verifyToken = (...allowedRoles) => {
+export const verifyToken = (...roles) => {
 
   return async (req, res, next) => {
 
     try {
 
-      // read token from cookies
-      const token = req.cookies?.token;
+      // get token from cookies
+      const token = req.cookies.token;
 
       // token missing
       if (!token) {
         return res.status(401).json({
-          message: "Token missing. Please login again.",
+          message: "Unauthorized - token missing",
         });
       }
 
       // verify token
       const decodedToken = jwt.verify(
         token,
-        process.env.JWT_SECRET_KEY
+        process.env.SECRET_KEY
       );
 
-      console.log("Decoded Token:", decodedToken);
+      // attach user
+      req.user = decodedToken;
 
-      // role check
+      // role authorization
       if (
-        allowedRoles.length > 0 &&
-        !allowedRoles.includes(decodedToken.role)
+        roles.length > 0 &&
+        !roles.includes(decodedToken.role)
       ) {
         return res.status(403).json({
-          message:
-            "Forbidden. You don't have permission to access this resource.",
+          message: "Forbidden",
         });
       }
 
-      // attach user data
-      req.user = decodedToken;
-
-      // move to next middleware
       next();
 
     } catch (err) {
 
-      console.log("Verify token error:", err);
+      console.log("Verify token error:", err.message);
 
-      // token expired
-      if (err.name === "TokenExpiredError") {
-        return res.status(401).json({
-          message: "Session expired. Please login again.",
-        });
-      }
-
-      // invalid token
-      if (err.name === "JsonWebTokenError") {
-        return res.status(401).json({
-          message: "Invalid token. Please login again.",
-        });
-      }
-
-      // other errors
-      return res.status(500).json({
-        message: "Internal server error",
-        error: err.message,
+      return res.status(401).json({
+        message: "Invalid or expired token",
       });
     }
   };
