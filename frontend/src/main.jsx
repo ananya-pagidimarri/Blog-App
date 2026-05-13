@@ -1,8 +1,12 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.jsx'
+import { createRoot } from "react-dom/client";
+import axios from "axios";
 
-createRoot(document.getElementById('root')).render(
-    <App />
-)
+import "./index.css";
+import App from "./App.jsx";
+
+// IMPORTANT FOR COOKIES
+axios.defaults.withCredentials = true;
+
+createRoot(document.getElementById("root")).render(
+  <App />
+);
