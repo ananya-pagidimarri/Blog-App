@@ -1,158 +1,82 @@
-import { create } from "zustand";
-import axios from "axios";
+import exp from "express";
+import { authenticate } from "../services/authService.js";
+import { verifyToken } from "../middlewares/VerifyToken.js";
 
-const savedUser =
-  typeof window !== "undefined"
-    ? JSON.parse(localStorage.getItem("currentUser") || "null")
-    : null;
+export const commonRoute = exp.Router();
 
-export const useAuth = create((set) => ({
-  currentUser: savedUser,
-  loading: false,
-  isAuthenticated: Boolean(savedUser),
-  error: null,
 
-  // ================= LOGIN =================
-  login: async (userCredObj) => {
+// ================= LOGIN =================
+commonRoute.post("/login", async (req, res, next) => {
+
+  try {
+
+    const userCredObj = req.body;
+
+    // authenticate user
+    const {
+      token,
+      user,
+    } = await authenticate(userCredObj);
+
+    // send token in cookie
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "None",
+      maxAge: 1000 * 60 * 60, // 1 hour
+    });
+
+    // send response
+    res.status(200).json({
+      message: "Login successful",
+      payload: user,
+    });
+
+  } catch (err) {
+
+    next(err);
+  }
+});
+
+
+// ================= LOGOUT =================
+commonRoute.get("/logout", (req, res) => {
+
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "None",
+  });
+
+  res.status(200).json({
+    message: "Logged out successfully",
+  });
+});
+
+
+// ================= CHECK AUTH =================
+commonRoute.get(
+  "/check-auth",
+  verifyToken("USER", "AUTHOR", "ADMIN"),
+  async (req, res) => {
+
     try {
 
-      set({
-        loading: true,
-        error: null,
-      });
-
-      // login request
-      const res = await axios.post(
-        `${BASE_URL}/common-api/login`,
-        userCredObj,
-        {
-          withCredentials: true,
-        }
-      );
-
-      const userData = res.data.payload;
-
-      // save user in localStorage
-      localStorage.setItem(
-        "currentUser",
-        JSON.stringify(userData)
-      );
-
-      // update state
-      set({
-        currentUser: userData,
-        isAuthenticated: true,
-        loading: false,
-        error: null,
+      res.status(200).json({
+        message: "Authenticated user",
+        payload: {
+          userId: req.user.userId,
+          role: req.user.role,
+          email: req.user.email,
+        },
       });
 
     } catch (err) {
 
-      console.log("Login error:", err);
-
-      localStorage.removeItem("currentUser");
-
-      set({
-        currentUser: null,
-        isAuthenticated: false,
-        loading: false,
-        error:
-          err.response?.data?.message ||
-          err.response?.data?.error ||
-          "Login failed",
+      res.status(500).json({
+        message: "Internal server error",
+        error: err.message,
       });
     }
-  },
-
-  // ================= LOGOUT =================
-  logout: async () => {
-
-    try {
-
-      set({
-        loading: true,
-        error: null,
-      });
-
-      await axios.get(
-        `${BASE_URL}/common-api/logout`,
-        {
-          withCredentials: true,
-        }
-      );
-
-      // clear local storage
-      localStorage.removeItem("currentUser");
-
-      // clear state
-      set({
-        currentUser: null,
-        isAuthenticated: false,
-        loading: false,
-        error: null,
-      });
-
-    } catch (err) {
-
-      console.log("Logout error:", err);
-
-      localStorage.removeItem("currentUser");
-
-      set({
-        currentUser: null,
-        isAuthenticated: false,
-        loading: false,
-        error:
-          err.response?.data?.message ||
-          "Logout failed",
-      });
-    }
-  },
-
-  // ================= CHECK AUTH =================
-  checkAuth: async () => {
-
-    try {
-
-      set({
-        loading: true,
-      });
-
-      const res = await axios.get(
-        `${BASE_URL}/common-api/check-auth`,
-        {
-          withCredentials: true,
-        }
-      );
-
-      const user = res.data.payload;
-
-      // store user
-      localStorage.setItem(
-        "currentUser",
-        JSON.stringify(user)
-      );
-
-      set({
-        currentUser: user,
-        isAuthenticated: true,
-        loading: false,
-        error: null,
-      });
-
-    } catch (err) {
-
-      console.log("Check auth error:", err);
-
-      // remove invalid user
-      localStorage.removeItem("currentUser");
-
-      set({
-        currentUser: null,
-        isAuthenticated: false,
-        loading: false,
-        error: null,
-      });
-    }
-  },
-}));
+  }
+);
