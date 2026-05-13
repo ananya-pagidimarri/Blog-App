@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import axios from "axios";
-import BASE_URL from "../utils/baseURL";
 
 const savedUser =
   typeof window !== "undefined"
