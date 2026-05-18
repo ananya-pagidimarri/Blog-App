@@ -12,12 +12,6 @@ function Home() {
         </h1>
 
         <div className="flex gap-4">
-          <Link
-            to="/login"
-            className="px-5 py-2 rounded-xl border border-white/20 hover:bg-white/10 transition-all duration-300"
-          >
-            Login
-          </Link>
 
           <Link
             to="/register"
