@@ -52,12 +52,7 @@ function Home() {
               Start Writing
             </Link>
 
-            <Link
-              to="/blogs"
-              className="px-8 py-4 rounded-2xl border border-white/20 hover:bg-white/10 font-semibold text-lg transition-all duration-300"
-            >
-              Explore Blogs
-            </Link>
+
           </div>
         </div>
 
