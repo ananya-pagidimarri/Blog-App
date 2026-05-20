@@ -3,11 +3,11 @@ import { PenSquare, Users, BookOpen, TrendingUp } from "lucide-react";
 
 function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white overflow-hidden">
+    <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-slate-950 text-white overflow-hidden">
       
       {/* Navbar */}
       <nav className="flex items-center justify-between px-8 md:px-20 py-6 border-b border-white/10 backdrop-blur-lg">
-        <h1 className="text-3xl font-extrabold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+        <h1 className="text-3xl font-extrabold bg-linear-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
           BlogSphere
         </h1>
 
@@ -34,7 +34,7 @@ function Home() {
           <h1 className="text-5xl md:text-7xl font-black leading-tight">
             Write. <br />
             Inspire. <br />
-            <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
               Connect.
             </span>
           </h1>
@@ -180,7 +180,7 @@ function Home() {
 
       {/* CTA */}
       <section className="px-6 md:px-20 pb-24">
-        <div className="bg-gradient-to-r from-cyan-500 to-blue-600 rounded-3xl p-12 text-center shadow-2xl">
+        <div className="bg-linear-to-r from-cyan-500 to-blue-600 rounded-3xl p-12 text-center shadow-2xl">
           <h2 className="text-4xl md:text-5xl font-black mb-6 text-black">
             Start Your Blogging Journey Today
           </h2>

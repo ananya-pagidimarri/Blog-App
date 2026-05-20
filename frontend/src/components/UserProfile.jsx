@@ -7,10 +7,6 @@ import { useEffect, useState } from "react";
 import BASE_URL from "../utils/baseURL";
 
 import {
-  articleGrid,
-  articleCardClass,
-  articleTitle,
-  ghostBtn,
   loadingClass,
   errorClass,
   timestampClass,
@@ -50,8 +46,6 @@ function UserProfile() {
         const token =
           localStorage.getItem("token");
 
-        console.log("TOKEN:", token);
-
         // API CALL
         const res = await axios.get(
           `${BASE_URL}/user-api/articles`,
@@ -60,11 +54,6 @@ function UserProfile() {
               Authorization: `Bearer ${token}`,
             },
           }
-        );
-
-        console.log(
-          "articles response",
-          res.data
         );
 
         setArticles(res.data.payload);
@@ -140,47 +129,55 @@ function UserProfile() {
   // ================= UI =================
   return (
 
-    <div>
+    <div className="min-h-screen bg-gray-100 px-6 py-10">
 
+      {/* ERROR */}
       {error && (
-        <p className={errorClass}>
+        <p className={`${errorClass} mb-6`}>
           {error}
         </p>
       )}
 
-      {/* PROFILE SECTION */}
-      <div className="text-end">
+      {/* PROFILE HEADER */}
+      <div className="max-w-7xl mx-auto bg-white rounded-3xl shadow-lg p-8 mb-12 flex flex-col md:flex-row justify-between items-center">
 
-        <p className="text-2xl">
-          Welcome, {currentUser?.firstName}
-        </p>
+        {/* LEFT */}
+        <div className="flex items-center gap-6">
 
-        {
-          currentUser?.profileImageUrl ? (
+          {
+            currentUser?.profileImageUrl ? (
 
-            <img
-              src={
-                currentUser.profileImageUrl
-              }
-              className="w-14 h-14 mr-2 rounded-full block ms-auto object-cover"
-              alt="profile"
-            />
+              <img
+                src={currentUser.profileImageUrl}
+                className="w-28 h-28 rounded-full object-cover border-4 border-blue-500 shadow-md"
+                alt="profile"
+              />
 
-          ) : (
+            ) : (
 
-            <div className="w-14 h-14 rounded-full bg-gray-300 flex items-center justify-center ms-auto mr-2 mt-2">
-              👤
-            </div>
-          )
-        }
+              <div className="w-28 h-28 rounded-full bg-gray-300 flex items-center justify-center text-5xl">
+                👤
+              </div>
+            )
+          }
 
-      </div>
+          <div>
 
-      {/* LOGOUT BUTTON */}
-      <div className="flex justify-end mb-6 mt-3">
+            <h1 className="text-4xl font-bold text-gray-800">
+              Welcome, {currentUser?.firstName}
+            </h1>
 
+            <p className="text-gray-500 mt-2 text-lg">
+              Explore articles and enhance your knowledge
+            </p>
+
+          </div>
+
+        </div>
+
+        {/* RIGHT */}
         <button
-          className="bg-blue-500 text-white px-4 py-2 rounded"
+          className="mt-6 md:mt-0 bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-2xl shadow-md transition duration-300"
           onClick={onLogout}
         >
           Logout
@@ -188,70 +185,108 @@ function UserProfile() {
 
       </div>
 
-      {/* ARTICLES */}
-      <div className={articleGrid}>
+      {/* EMPTY */}
+      {
+        articles.length === 0 ? (
 
-        {articles.length === 0 ? (
-
-          <p>No articles found</p>
+          <div className="text-center text-gray-500 text-lg mt-20">
+            No articles found
+          </div>
 
         ) : (
 
-          articles.map((articleObj) => (
+          <>
+            {/* HEADING */}
+            <div className="max-w-7xl mx-auto mb-8">
 
-            <div
-              className={articleCardClass}
-              key={articleObj._id}
-            >
+              <h2 className="text-3xl font-bold text-gray-800">
+                Latest Articles
+              </h2>
 
-              <div className="flex flex-col h-full">
-
-                {/* TOP CONTENT */}
-                <div>
-
-                  <p className={articleTitle}>
-                    {articleObj.title}
-                  </p>
-
-                  <p>
-                    {
-                      articleObj.content.slice(
-                        0,
-                        80
-                      )
-                    }
-                    ...
-                  </p>
-
-                  <p className={timestampClass}>
-                    {
-                      formatDateIST(
-                        articleObj.createdAt
-                      )
-                    }
-                  </p>
-
-                </div>
-
-                {/* BUTTON */}
-                <button
-                  className={`${ghostBtn} mt-auto pt-4`}
-                  onClick={() =>
-                    navigateToArticleByID(
-                      articleObj
-                    )
-                  }
-                >
-                  Read Article →
-                </button>
-
-              </div>
+              <p className="text-gray-500 mt-2">
+                Read and explore articles from different categories
+              </p>
 
             </div>
-          ))
-        )}
 
-      </div>
+            {/* ARTICLES GRID */}
+            <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+
+              {
+                articles.map((articleObj) => (
+
+                  <div
+                    key={articleObj._id}
+                    className="group bg-white rounded-3xl border border-gray-200 overflow-hidden hover:-translate-y-2 hover:shadow-2xl transition-all duration-300"
+                  >
+
+                    {/* TOP BAR */}
+                    <div className="h-3 bg-linear-to-r from-blue-500 to-purple-500"></div>
+
+                    {/* CONTENT */}
+                    <div className="p-6 flex flex-col h-full">
+
+                      {/* CATEGORY */}
+                      <div className="mb-4">
+
+                        <span className="bg-blue-100 text-blue-600 text-xs px-3 py-1 rounded-full font-semibold uppercase tracking-wide">
+                          {articleObj.category || "Article"}
+                        </span>
+
+                      </div>
+
+                      {/* TITLE */}
+                      <h2 className="text-2xl font-bold text-gray-800 mb-4 leading-snug group-hover:text-blue-600 transition">
+
+                        {articleObj.title}
+
+                      </h2>
+
+                      {/* CONTENT */}
+                      <p className="text-gray-600 leading-7 mb-6">
+
+                        {articleObj.content.slice(0, 140)}...
+
+                      </p>
+
+                      {/* FOOTER */}
+                      <div className="mt-auto flex items-center justify-between">
+
+                        {/* DATE */}
+                        <div>
+
+                          <p className="text-sm text-gray-400">
+                            Published
+                          </p>
+
+                          <p className={timestampClass}>
+                            {formatDateIST(articleObj.createdAt)}
+                          </p>
+
+                        </div>
+
+                        {/* BUTTON */}
+                        <button
+                          className="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2 rounded-xl shadow-md transition"
+                          onClick={() =>
+                            navigateToArticleByID(articleObj)
+                          }
+                        >
+                          Read →
+                        </button>
+
+                      </div>
+
+                    </div>
+
+                  </div>
+                ))
+              }
+
+            </div>
+          </>
+        )
+      }
 
     </div>
   );
